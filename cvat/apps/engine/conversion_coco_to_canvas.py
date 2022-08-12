@@ -10,6 +10,7 @@ class output_conversion_cls:
         for filename in os.listdir(input_h5_file):
             if filename.endswith(".txt"):
                 filename_json=os.path.join(input_h5_file,filename)
+                #print("pathhhhhhhhhhhhhhhhhhhhhhhhhhhhhhtxttttttttttttttttt", filename_json)
                 f = open(filename_json)
                 data = json.load(f)    
                 devicename=data["devicename"]
@@ -17,7 +18,7 @@ class output_conversion_cls:
                 frame_timestamp_dict = data["frame_timestamp_dict"]
                 frame_timestamp_dict = {int(k):int(v) for k,v in frame_timestamp_dict.items()}
                 
-        print(devicename,channelname,frame_timestamp_dict)
+        #print(devicename,channelname,frame_timestamp_dict)
                 
         return devicename,channelname,frame_timestamp_dict
 
@@ -181,7 +182,7 @@ class output_conversion_cls:
         Channels_dict["ObjectLabels"]=ObjectLabels
         Channels.append(Channels_dict)
 
-        Devices_dict["DeviceName"]="MFC520"  ##STATIC
+        Devices_dict["DeviceName"]=devicename  ##STATIC
         Devices_dict["Channels"]=Channels
         Devices.append(Devices_dict)
 

@@ -954,7 +954,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if(e.key == 'w'){
+        if(e.ctrlKey && e.key == "ArrowRight"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -962,7 +962,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.onEditDone(state,state.points,0);
             }
         }
-        if(e.key == 'W'){
+        if(e.ctrlKey && e.key == "ArrowLeft"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -971,7 +971,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if (e.key == 'e'){
+        if (e.ctrlKey && e.key == "ArrowDown"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -979,7 +979,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.onEditDone(state,state.points,0);
             }
         }
-        if (e.key == 'E'){
+        if (e.ctrlKey && e.key == "ArrowUp"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -988,7 +988,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if(e.key == 'z'){
+        if(e.altKey && e.key == "ArrowRight"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -997,7 +997,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if(e.key == 'Z'){
+        if(e.altKey && e.key == "ArrowLeft"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -1006,7 +1006,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if(e.key == 'x'){
+        if(e.altKey && e.key == "ArrowDown"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
@@ -1015,7 +1015,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         }
 
-        if(e.key == 'X'){
+        if(e.altKey && e.key == "ArrowUp"){
             e.preventDefault();
             if (this.activeElement) {
             const [state] = this.controller.objects.filter((_state: any): boolean => _state.clientID === this.activeElement.clientID);
