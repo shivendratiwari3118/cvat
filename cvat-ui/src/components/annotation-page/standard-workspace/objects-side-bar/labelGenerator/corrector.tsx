@@ -29,7 +29,6 @@ const Corrector = (props:Props) => {
     //const [visible, setVisible] = useState(false);
     
     const {attributes, AnnotationId, jobInstance} = props
-    console.log('Corrector    props', jobInstance)
     const dispatch = useDispatch();
     const [cssclass, setCssclass] = useState("");
     const [assignSRdata, setAssignSRdata] = useState([]);

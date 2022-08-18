@@ -1254,6 +1254,7 @@ export function updateAnnotationsAsync(statesToUpdate: any[]): ThunkAction {
 
 export function createAnnotationsAsync(sessionInstance: any, frame: number, statesToCreate: any[]): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        await dispatch(saveAnnotationsAsync(sessionInstance))
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
             await sessionInstance.annotations.put(statesToCreate);

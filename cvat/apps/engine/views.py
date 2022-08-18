@@ -2221,6 +2221,7 @@ def _export_annotations(db_instance, rq_id, request, format_name, action, callba
         last_instance_update_time = timezone.localtime(db_instance.updated_date)
         if isinstance(db_instance, Project):
             tasks_update = list(map(lambda db_task: timezone.localtime(db_task.updated_date), db_instance.tasks.all()))
+            
             last_instance_update_time = max(tasks_update + [last_instance_update_time])
         request_time = rq_job.meta.get('request_time', None)
         if request_time is None or request_time < last_instance_update_time:
@@ -2231,7 +2232,7 @@ def _export_annotations(db_instance, rq_id, request, format_name, action, callba
                 file_path = rq_job.return_value
 		        # ADDING CONVERION SCRIPT
                 if format_name == "CANVAS 1.0":
-                    task_name = "SR"
+                    task_name = db_instance
                     login_name = "1"
                     import os
                     import zipfile

@@ -50,6 +50,7 @@ class output_conversion_cls:
 
     def output_conversion_objectlabel(self, labelfile_input_path, input_h5_file, task_name, login_name):
         devicename,channelname,frame_timestamp_dict=occ.h5_extract_start(input_h5_file)
+        task_name=str(task_name)
 
         f = open(labelfile_input_path)
         data = json.load(f)
@@ -216,7 +217,9 @@ class output_conversion_cls:
         main.append(main_dict)
 
         main_json=json.dumps(main[0])
-        output_write_file = input_h5_file+"SR_ObjectLabels.json"
+
+        output_write_file = input_h5_file+task_name+"_ObjectLabels.json"
+        #output_write_file = input_h5_file+"SR_ObjectLabels.json"
         with open(output_write_file, "w") as f:
            f.write(main_json)
 
@@ -240,6 +243,8 @@ class output_conversion_cls:
 
     def output_conversion_scenelabel(self, labelfile_input_path, input_h5_file, task_name, login_name):
         devicename,channelname,frame_timestamp_dict=occ.h5_extract_start(input_h5_file)
+        task_name=str(task_name)
+        
         f = open(labelfile_input_path)
         data = json.load(f)
         scenelabel=[d for d in data["categories"] if d["name"] == "Scene_Label"]
@@ -350,7 +355,9 @@ class output_conversion_cls:
         main.append(main_dict)
 
         main_json=json.dumps(main[0])
-        output_write_file = input_h5_file+"SR_SceneLabels.json"
+        output_write_file = input_h5_file+task_name+"_SceneLabels.json"
+        #output_write_file = input_h5_file+"SR_SceneLabels.json"
+        #print("outputtttttttttttttttttttttttttttttttttttttt", output_write_file, output_write_filee)
         with open(output_write_file, "w") as f:
            f.write(main_json)
 
@@ -358,7 +365,7 @@ class output_conversion_cls:
 
 # labelfile_input_path=r'C:\Users\105926\Downloads\full\annotations\instances_default.json'
 # input_h5_file=r'C:\Users\105926\Documents\Output_Conversion'
-task_name="SR"
+#task_name="SR"
 login_name="1"
 
 occ=output_conversion_cls()

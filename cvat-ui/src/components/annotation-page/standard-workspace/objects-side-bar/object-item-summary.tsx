@@ -115,12 +115,16 @@ const ObjectLabelSummary = () => {
 
     },[])
    
+    let sum = 0;
+    datas.forEach(num => {
+        sum += num.count;
+    });
 
     return (
         <>
             <Row>
                 <Col span={24}>
-                <Title level={5}>Total Frame Count : 112</Title>
+                <Title level={5}>Total Frame Count : {sum}</Title>
                 </Col>
             </Row>
             <Row>

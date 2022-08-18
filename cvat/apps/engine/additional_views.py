@@ -6,6 +6,11 @@ from .crop_images_label_corrector import label_generator_crop
 from .serializers import *
 from django.shortcuts import get_object_or_404
 
+def img_to_base64(img):
+    import base64
+    with open(img, "rb") as img_file:
+        return "data:image/jpeg;base64,"+str(base64.b64encode(img_file.read())).replace("b'","").replace("'","")
+
 
 # class ProjectExtraViewSet(viewsets.ModelViewSet):
 #     queryset = AdditionalProjectInfo.objects.filter()
@@ -244,8 +249,11 @@ class JobTrackSummary(viewsets.ViewSet):
                 new_dict[item.id]['frames'].append(job.segment.stop_frame)
             if new_sign_class:
                 new_dict[item.id]['sign_class'] = new_sign_class.pop()
+                img_path = Catlog.objects.filter(signname=new_dict[item.id]['sign_class']).last().imagepath
+                new_dict[item.id]['sign_class_img'] = img_to_base64(img_path)
             else:
                 new_dict[item.id]['sign_class'] = ''
+                new_dict[item.id]['sign_class_img'] = ''
             new_dict[item.id]['count'] = max(new_dict[item.id]['frames']) - min(new_dict[item.id]['frames']) + 1
             new_dict[item.id]['start_frame'] = min(new_dict[item.id]['frames'])
             new_dict[item.id]['end_frame'] = max(new_dict[item.id]['frames'])

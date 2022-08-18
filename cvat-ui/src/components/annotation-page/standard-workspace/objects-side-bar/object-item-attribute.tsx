@@ -30,6 +30,7 @@ interface Props {
     changeAttribute(attrID: number, value: string): void;
     jobInstance: any;
     AnnotationId: number | undefined
+    currentFrame:number
 }
 
 function attrIsTheSame(prevProps: Props, nextProps: Props): boolean {
@@ -47,7 +48,7 @@ function attrIsTheSame(prevProps: Props, nextProps: Props): boolean {
 
 function ItemAttributeComponent(props: Props): JSX.Element {
     const {
-        AnnotationId, jobInstance, attrInputType, attrValues, attrValue, attrName, attrID, readonly, changeAttribute,clientID
+        AnnotationId,currentFrame, jobInstance, attrInputType, attrValues, attrValue, attrName, attrID, readonly, changeAttribute,clientID
     } = props;
 
     const attrNameStyle: React.CSSProperties = { wordBreak: 'break-word', lineHeight: '1em' };
@@ -94,7 +95,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                 </Checkbox>
                 {AnnotationId === undefined ?  
                      <Popover
-                     content={<NotSavedAnnotationModal jobInstance={jobInstance} popOverHide={popOverHide} flagValue={false} />}
+                     content={<NotSavedAnnotationModal currentFrame={currentFrame} changeAttribute={changeAttribute} jobInstance={jobInstance} popOverHide={popOverHide} flag={false} />}
                      placement="bottom"
                      title=""
                      trigger="click"
@@ -175,7 +176,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                     </Select>
                     {AnnotationId === undefined ?  
                         <Popover
-                            content={<NotSavedAnnotationModal flagValue={false} jobInstance={jobInstance} popOverHide={popOverHide} />}
+                            content={<NotSavedAnnotationModal currentFrame={currentFrame} changeAttribute={changeAttribute} jobInstance={jobInstance} popOverHide={popOverHide} flag={false} />}
                             placement="bottom"
                             title=""
                             trigger="click"
@@ -225,7 +226,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                     />
                      {AnnotationId === undefined ?  
                         <Popover
-                            content={<NotSavedAnnotationModal flagValue={false} jobInstance={jobInstance} popOverHide={popOverHide} />}
+                            content={<NotSavedAnnotationModal currentFrame={currentFrame} changeAttribute={changeAttribute} jobInstance={jobInstance} popOverHide={popOverHide} flag={false} />}
                             placement="bottom"
                             title=""
                             trigger="click"

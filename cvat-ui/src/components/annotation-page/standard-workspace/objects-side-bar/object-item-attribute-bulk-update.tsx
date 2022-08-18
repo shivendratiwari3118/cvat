@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Button, Divider, Modal, Typography, Radio } from 'antd';
-import {useDispatch } from 'react-redux';
+import {connect, useDispatch, useSelector } from 'react-redux';
 import InputNumber from 'antd/lib/input-number';
 import { Checkbox } from 'antd';
+import { Col, Row } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { RadioChangeEvent } from 'antd';
-import serverProxy from 'cvat-core/src/server-proxy.js';
-import { saveAnnotationsAsync } from 'actions/annotation-actions';
+import { fetchAnnotationsAsync, saveAnnotationsAsync } from 'actions/annotation-actions';
+import { CombinedState } from 'reducers/interfaces';
+import {
+  activateObject as activateObjectAction,
+  changeFrameAsync,
+  updateAnnotationsAsync,
+} from 'actions/annotation-actions';
+import { ThunkDispatch } from 'utils/redux';
+import serverProxy from 'cvat-core/src/server-proxy';
+import { getOrganizationsAsync } from 'actions/organization-actions';
+import { RouteComponentProps } from 'react-router';
 
 interface Props {
   attrID: number;
@@ -16,6 +27,10 @@ interface Props {
   jobInstance: any;
   AnnotationId: number | undefined
   attrValue: any;
+  getAnnotationsApi:(a:any, b:any) => void
+  setReloadRequire(a:boolean):void;
+  currentFrame: number;
+  changeAttribute(attrID: number, value: string): void;
 }
 interface payLoadProps {
   start_frame: any;
@@ -23,22 +38,25 @@ interface payLoadProps {
   job_id: any;
   AnnotationId: number| undefined;
   attribute_id: number,
+ // old_annotation_id: number| undefined
   attribute_name: string;
   attribute_val: any;
   attribute_previous_val:any
 }
 
-const AttributeBulkUpdate = (props: Props) => {
-    const dispatch = useDispatch();
-  const {attrID, AnnotationId, attrValue, attrName, trackId, jobInstance } = props;
+const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
+
+  const dispatch = useDispatch();
+  const {attrID,currentFrame,changeAttribute, AnnotationId, attrValue, attrName, trackId, jobInstance,setReloadRequire, getAnnotationsApi, history:push } = props;
   const { Title } = Typography;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [value, setValue] = useState(1);
   const [chkValue, setChkValue] = useState(false);
-  const [start, setStart] = useState(null);
-  const [end, setEnd] = useState(null);
+  const [start, setStart] = useState<any>(null);
+  const [end, setEnd] = useState<any>(null);
   const [jobId, setJobId] = useState(0);
   const [err,setErr] = useState(false);
+  const [flag, setFlag] = useState(false)
 
   React.useEffect(() => {
     let path = window.location.pathname;
@@ -56,16 +74,16 @@ const AttributeBulkUpdate = (props: Props) => {
 
   React.useEffect(() => {
     //Don't know how to find the currentFrame number , so default it to 1
-    let currentFrame = 1;
+    
     if (value == 1) {
       setStart(currentFrame);
-      setEnd(10);
+      setEnd(jobInstance.stopFrame);
     } else if (value == 2) {
       setStart(1);
       setEnd(currentFrame);
     } else if (value == 3) {
-      setStart(1);
-      setEnd(10);
+      setStart(jobInstance.startFrame);
+      setEnd(jobInstance.stopFrame);
     }
   }, [value]);
 
@@ -73,12 +91,12 @@ const AttributeBulkUpdate = (props: Props) => {
     setChkValue(e.target.checked);
   };
 
-  const showModal = async () => {
-   
+  const showModal = async () => {   
     setIsModalVisible(true);
     props.popOverHide(false);
   };
-  
+ 
+ 
 
   const payLoadPostAPI = async (payload: payLoadProps) => {
     return serverProxy.jobs
@@ -92,14 +110,12 @@ const AttributeBulkUpdate = (props: Props) => {
   }
 
   const bulkUpdateAttributes = async () => {
-    
-      // here we need to call save function
     if(start !== null && end !== null){
-        await dispatch(saveAnnotationsAsync(jobInstance))
       try {
+        await dispatch(saveAnnotationsAsync(jobInstance))
         const payLoad: payLoadProps = {
           start_frame: start,
-          end_frame: end,
+          end_frame: Number(end) + 1,
           job_id: jobId,
           AnnotationId,
           attribute_id: attrID,
@@ -109,8 +125,38 @@ const AttributeBulkUpdate = (props: Props) => {
         };
   
         const apiResponse = await payLoadPostAPI(payLoad);
-        if(apiResponse.message ==  "true"){
-          window.location.reload();
+        console.log('getOrganizations succccccc',apiResponse);
+        if(apiResponse.message ==true){
+          setFlag(true)
+          // isSuccessFun()
+          setReloadRequire(true)
+          let i = 1;
+          console.log('bulk succccccc', currentFrame, i++);
+          console.log('bulk currentFrame', currentFrame > end);
+          // if(currentFrame !> end ){
+          //  window.location.reload();
+          changeAttribute(attrID, 'true');
+          // dispatch(saveAnnotationsAsync(jobInstance));
+          // dispatch(changeFrameAsync(currentFrame));
+          console.log('bulk succccccc');
+          // }
+         // dispatch(getOrganizationsAsync());
+          //  window.location.reload();
+          // const taskId = 125
+        //  const session = 'job'
+         
+        //  push(`/tasks/${taskId}/jobs/${jobId}`);
+        //  getAnnotationsApi(session,jobId)
+          // serverProxy.annotations
+          // .getAnnotations(session,jobId)
+          //   .then((result: any) => {
+          //     console.log('getOrganizations succccccc',result);
+          //     return result;
+          //   })
+          //   .catch((error: any) => {
+          //     return error;
+          //   })
+        
         }
 
         setIsModalVisible(false);
@@ -134,26 +180,31 @@ const AttributeBulkUpdate = (props: Props) => {
       <Button type="text" onClick={showModal}>Bulk Update</Button>
       {isModalVisible &&
         <>
-          <Modal width={650} title="Bulk Update Object Labels" visible={isModalVisible} onOk={bulkUpdateAttributes} onCancel={handleCancel}>
+          <Modal width={700} title="Bulk Update Object Labels" visible={isModalVisible} onOk={bulkUpdateAttributes} onCancel={handleCancel}>
             <Title level={5} style={{ display: 'block', textAlign: 'center' }}> Track Id: {trackId}</Title>
             <Divider />
             <Radio.Group onChange={onRadioChange} value={value} style={{ borderLeft: '1px solid grey', borderTop: '1px solid grey', padding: '10px' }}>
-              <React.Fragment>
-                <Radio value={1}><Title level={5}>Current Frame to End Frame</Title></Radio>
-              </React.Fragment>
-              <div>
-                <Radio value={2}> <Title level={5}>Start Frame to Current Frame</Title></Radio>
-              </div>
-              <React.Fragment>
-                <Radio value={3}><Title level={5}>Start Frame to End Frame</Title></Radio>
-              </React.Fragment>
-              <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Radio value={4} />
-                <Title level={5}>Enter Start Frame</Title>
-                <InputNumber disabled={value !==4} style={{ marginLeft: '10px' }}  min={1} onChange={(value:number) => setStart(value)} />
-                <Title style={{ marginLeft: '10px' }} level={5}>to End Frame</Title>
-                <InputNumber disabled={value !==4} style={{ marginLeft: '10px' }}  min={start} onChange={(value: number) => setEnd(value)} />
-              </div>
+              
+              <Row>
+                <Col span={24}> <Radio value={1}><Title level={5}>Current Frame to End Frame</Title></Radio></Col>
+              </Row>
+              <Row>
+                <Col span={24}> <Radio value={2}> <Title level={5}>Start Frame to Current Frame</Title></Radio></Col>
+              </Row>
+              <Row>
+                <Col span={24}> <Radio value={3}><Title level={5}>Start Frame to End Frame</Title></Radio></Col>
+              </Row>
+              <Row>
+                <Col span={24}> 
+                  <Row>
+                    <Col span={1}><Radio value={4} /></Col>
+                    <Col span={8}> <Title style={{marginLeft:'5px'}} level={5}>Enter Start Frame</Title></Col>
+                    <Col span={3}><InputNumber disabled={value !==4}  min={1} onChange={(value:number) => setStart(value)} /></Col>
+                    <Col span={8}><Title style={{marginLeft:'39px'}}  level={5}>to End Frame</Title></Col>
+                    <Col span={3}><InputNumber disabled={value !==4}   min={start} onChange={(value: number) => setEnd(value)} /></Col>
+                  </Row>
+                </Col>  
+              </Row>
             </Radio.Group>
             {err ? <Title level={5} style={{color:'red'}}>Please select start & end frame,before proceeding!</Title> : ''}
             <Divider />
