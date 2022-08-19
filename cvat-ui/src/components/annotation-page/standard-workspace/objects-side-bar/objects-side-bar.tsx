@@ -19,7 +19,7 @@ import { adjustContextImagePosition } from 'components/annotation-page/standard-
 import { collapseSidebar as collapseSidebarAction } from 'actions/annotation-actions';
 import AppearanceBlock from 'components/annotation-page/appearance-block';
 import IssuesListComponent from 'components/annotation-page/standard-workspace/objects-side-bar/issues-list';
-import ObjectLabelSummary from './object-item-summary';
+import ObjectLabelSummary from './LabelSummary/object-item-summary';
 
 interface OwnProps {
     objectsList: JSX.Element;

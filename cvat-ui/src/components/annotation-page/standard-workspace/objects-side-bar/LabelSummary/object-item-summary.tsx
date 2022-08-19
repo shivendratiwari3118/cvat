@@ -2,13 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Select } from 'antd';
-import { Col, Row } from 'antd';
+import { Col, Row,Space } from 'antd';
 import { Input} from 'antd';
 import { LeftCircleFilled, RightCircleFilled } from '@ant-design/icons';
 import { Typography } from 'antd';
 import serverProxy from 'cvat-core/src/server-proxy';
 import { changeFrameAsync } from 'actions/annotation-actions';
 import { useDispatch } from 'react-redux';
+
+import './object-label-summary.css';
 
 interface DataType {
         key: string;
@@ -24,12 +26,13 @@ const { Option } = Select;
 const { Search } = Input;
 
 const ObjectLabelSummary = () => {
-    const [datas, setData] = useState([])  
+    const [data, setData] = useState([])  
       const [selectedRowData, setSelectedRowData] = useState<any>()
       const [search, setSearch] = useState(false)
       const [searchData, setSearchData] = useState([])
       const [searchValue, setSearchValue] = useState("")
       const [dropDownValue, setDropDownValue] = useState('trackId')
+      const [selectedRow, setSelectedRow] = useState<any>([])
       const dispatch = useDispatch();
 
 
@@ -38,12 +41,7 @@ const ObjectLabelSummary = () => {
       };
 
     const handleSearchChange = (event:any) => {
-        if(event.target.value == ''){
-            setSearch(false)
-        }
-        else{
         setSearchValue(event.target.value)
-        }
     }
     
     const onSearch = (value: string) =>{
@@ -53,78 +51,94 @@ const ObjectLabelSummary = () => {
         else {
             setSearch(true)
             if(dropDownValue == 'trackId'){
-                const filterSearchData = datas?.filter((item:any) => item.track_id == value);
+                const filterSearchData = data?.filter((item:any) => item.track_id == value);
                 setSearchData(filterSearchData)
             }
             else if(dropDownValue == 'category'){
-                const filterSearchData = datas?.filter((item:any) => item);
+                const filterSearchData = data?.filter((item:any) => item);
                 setSearchData(filterSearchData)
             }
             else if(dropDownValue == 'signClass'){
-                const filterSearchData = datas?.filter((item:any) => item.sign_class == value);
+                const filterSearchData = data?.filter((item:any) => item.sign_class == value);
                 setSearchData(filterSearchData)
             }
             
         }
     } 
-   
 
-    const handleLeftClick = (frame:any) => {
-        dispatch(changeFrameAsync(frame));
+    const handleLeftArrowClick = (frame:any) => {        
+        dispatch(changeFrameAsync(frame.start_frame));
     }
-    const handleRightClick = (frame:any) => {
-        dispatch(changeFrameAsync(frame));
+    const handleRightArrowClick = (frame:any) => {
+        dispatch(changeFrameAsync(frame?.end_frame));
     }
 
     const columns: ColumnsType<DataType> = [   
         {
           title: 'Track Id',
+          width:15,
           dataIndex: 'track_id',
-          render: (text:any) => <a>{text}</a>,
+          render: text => {
+          return(<a>{text}</a>)
+        }
         },
         {
-          title: 'Object Category',
+          title: 'Category',
+          width:20,
           className: 'column-money',
           dataIndex: 'label',
-          align: 'right',
         },
         {
           title: 'Frame Count',
           dataIndex: 'count',
+          width: 30
         },
         {
           title: 'Navigation',
           dataIndex: 'start_frame',
-          render: () => <a>
-                        <Tooltip title={selectedRowData?.start_frame} ><LeftCircleFilled style={{marginRight: '10px'}} onClick={() => handleLeftClick(selectedRowData?.start_frame)} /></Tooltip> 
-                        <Tooltip title={selectedRowData?.end_frame} ><RightCircleFilled onClick={() => handleRightClick(selectedRowData?.end_frame)} /></Tooltip>
-                    </a>,
+          width:20,
+          render: () => 
+            <a>
+                <Tooltip title={selectedRowData?.start_frame} ><LeftCircleFilled style={{marginRight: '10px'}} onClick={() => handleLeftArrowClick(selectedRowData)} /></Tooltip> 
+                <Tooltip title={selectedRowData?.end_frame} ><RightCircleFilled onClick={() => handleRightArrowClick(selectedRowData)} /></Tooltip>
+            </a>,
+           
         },
         {
           title: 'Sign Class',
-          dataIndex: 'sign_class',
+          dataIndex: 'action',
+          width:60,
+          render: (_, record:any) => {
+            return(
+            <>
+              <img src={record?.sign_class_img} width='40px' alt='sign class image' />
+              <strong style={{marginLeft:'5px'}}>{record.sign_class}</strong>
+            </>
+          )}
+        //   render: (img:any) => 
         },
       ];
 
     useEffect(() => {
         let path = window.location.pathname;
         let pathArr = path.split("/");
-        serverProxy.jobs.getTrackedFrameSummary(Number(pathArr[pathArr.length - 1])).then((res:any) => {
+        serverProxy.jobs.getTrackedFrameSummary(Number(pathArr[pathArr.length - 1])).then((res) => {
             setData(res);
         });
 
     },[])
-   
+    
     let sum = 0;
-    datas.forEach(num => {
+    data.forEach(num => {
         sum += num.count;
     });
-
+    console.log("data", data)
+   
     return (
         <>
             <Row>
                 <Col span={24}>
-                <Title level={5}>Total Frame Count : {sum}</Title>
+                <Title level={5}>Total Frame Count : {sum && sum}</Title>
                 </Col>
             </Row>
             <Row>
@@ -142,18 +156,22 @@ const ObjectLabelSummary = () => {
             </Row>
            
             <Table
+                rowClassName={(record:any) => record?.track_id == selectedRow?.track_id ? "selected-row-item" : ""}
                 columns={columns}
-                dataSource={search ? searchData : datas}
+                dataSource={search ? searchData : data}
                 bordered
                 pagination={false}
-                scroll={{x:true}}
+                scroll={{ x: 600, y: 300 }}
                 onRow={(record:any) => {
-                    return { 
-                        onMouseEnter: () => {
-                            setSelectedRowData(record)
-                        }, 
+                    return {
+                      onClick: (event:any) => {
+                        setSelectedRow(record)
+                      }, 
+                      onMouseEnter: (event:any) => {
+                        setSelectedRowData(record)
+                        },
                     };
-                  }}
+                  }}               
             />
     </>
 
