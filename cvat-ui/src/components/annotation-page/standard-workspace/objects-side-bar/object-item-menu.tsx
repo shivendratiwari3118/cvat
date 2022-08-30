@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React from 'react';
+import React, { useState } from 'react';
 import Menu from 'antd/lib/menu';
 import Button from 'antd/lib/button';
 import Modal from 'antd/lib/modal';
+import { Row, Col } from 'antd/lib/grid';
+import { Radio } from 'antd';
+
 import Icon, {
     LinkOutlined, CopyOutlined, BlockOutlined, RetweetOutlined, DeleteOutlined,
 } from '@ant-design/icons';
@@ -18,6 +21,8 @@ import {
     ObjectType, ShapeType, ColorBy, DimensionType,
 } from 'reducers/interfaces';
 import ColorPicker from './color-picker';
+import serverProxy from 'cvat-core/src/server-proxy';
+
 
 interface Props {
     readonly: boolean;
@@ -177,13 +182,71 @@ function SwitchColorItem(props: ItemProps): JSX.Element {
     );
 }
 
+interface payLoadProps {
+    frame: any;
+    next_frame: any;
+    track_id: any;
+}
+
 function RemoveItem(props: ItemProps): JSX.Element {
+    const [option, setOption] = useState<string>('current-frame');
+    const [startFrame, setStartFrame] = useState<number>(0);
+    const [endFrame, setEndFrame] = useState<number>(0);
     const { toolProps, ...rest } = props;
-    const { removeShortcut, locked, remove } = toolProps;
+    const { removeShortcut, locked, remove, serverID } = toolProps;
+
+    const handleOptionSelect = (e: Object): any => {
+        setOption(e.target.value);
+        console.log('option selected ', e.target.value);
+    };
+    const handleRangeSelect = (e: Object, order: string): any => {
+        console.log('range selected ', order, e.target.value, e);
+        switch (order) {
+            case 'start':
+                setStartFrame(e.target.value);
+                break;
+            case 'end':
+                setEndFrame(e.target.value);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleRemoveAnnotation = (): void => {
+        console.log(startFrame, endFrame, 'startFrame,endFrame inside function ');
+        console.log('handleRemoveAnnotation invoked with option', option, props);
+        const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
+        const payLoad: payLoadProps = {
+            frame: parseInt(delete_frames.first),
+            next_frame: parseInt(delete_frames.last) + 1,
+            track_id: serverID,
+        };
+
+        serverProxy.jobs
+            .saveBulkDelete(65, payLoad)
+            .then((result: any) => {
+                console.log('updated see');
+                window.location.reload();
+                return result;
+            })
+            .catch((error: any) => {
+                return error;
+            });
+        console.log('payLoad', payLoad);
+    };
+
+    console.log(startFrame, endFrame, 'startFrame,endFrame');
+    const frames_delete = {
+        first: startFrame,
+        last: endFrame,
+    };
+    window.localStorage.setItem('delete_frames', JSON.stringify(frames_delete));
+    console.log(startFrame, endFrame, 'startFrame,endFrame set cookie');
     return (
         <Menu.Item {...rest}>
             <CVATTooltip title={`${removeShortcut}`}>
-                <Button
+                {/* <Button
                     type='link'
                     icon={<DeleteOutlined />}
                     onClick={(): void => {
@@ -199,6 +262,65 @@ function RemoveItem(props: ItemProps): JSX.Element {
                         } else {
                             remove();
                         }
+                    }}
+                >
+                    Remove
+                </Button> */}
+                <Button
+                    type='link'
+                    icon={<DeleteOutlined />}
+                    onClick={(): void => {
+                        Modal.info({
+                            className: 'cvat-modal-confirm',
+                            title: 'Delete Annotation',
+                            onOk() {
+                                if (locked) {
+                                    Modal.confirm({
+                                        className: 'cvat-modal-confirm',
+                                        title: 'Object is locked',
+                                        content: 'Are you sure you want to remove it?',
+                                        onOk() {
+                                            remove();
+                                        },
+                                    });
+                                } else {
+                                    handleRemoveAnnotation();
+                                }
+                            },
+                            content: (
+                                <>
+                                    <Row align='middle' justify='space-between'>
+                                        <div className='delete-head'>
+                                            <p>Single ROI for deletion</p>
+                                        </div>
+                                        <Radio.Group className='radio-container' onChange={handleOptionSelect}>
+                                            <Radio value={'current-frame'}>Current Frame</Radio>
+                                            <Radio value={'current-frame-to-end-frame'}>
+                                                Current Frame to End Frame
+                                            </Radio>
+                                            <Radio value={'start-frame-to-current-frame'}>
+                                                Start Frame to Current Frame
+                                            </Radio>
+                                            <Radio value={'start-frame-to-end-frame'}>Start Frame to End Frame</Radio>
+                                            <Radio value={'custom-range'}>
+                                                Enter Start Frame &nbsp;
+                                                <input
+                                                    type='number'
+                                                    className='start-range frame-range'
+                                                    onChange={(e) => handleRangeSelect(e, 'start')}
+                                                />{' '}
+                                                to End &nbsp;Frame &nbsp;
+                                                <input
+                                                    type='number'
+                                                    className='end-range frame-range'
+                                                    onChange={(e) => handleRangeSelect(e, 'end')}
+                                                />
+                                            </Radio>
+                                        </Radio.Group>
+                                    </Row>
+                                </>
+                            ),
+                        });
                     }}
                 >
                     Remove

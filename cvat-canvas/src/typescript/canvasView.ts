@@ -2351,7 +2351,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         return this.adoptedText
             .text((block): void => {
                 let dimensions = getDimentions(points)
-                block.tspan(`${withLabel ? label.name : ''} ${withID ? (` ${dimensions} `) : ''} ${withSource ? `(${source})` : ''}`).style({
+                block.tspan(`${serverID} ${withLabel ? label.name : ''} ${withID ? (` ${dimensions} `) : ''} ${withSource ? `(${source})` : ''}`).style({
                     'text-transform': 'uppercase',
                 });
                 if (withDescriptions) {

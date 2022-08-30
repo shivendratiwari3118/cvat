@@ -77,7 +77,7 @@ const ObjectLabelSummary = () => {
         {
           title: 'Track Id',
           width:15,
-          dataIndex: 'track_id',
+          dataIndex: 'item_id',
           render: text => {
           return(<a>{text}</a>)
         }

@@ -1268,8 +1268,7 @@ export function createAnnotationsAsync(sessionInstance: any, frame: number, stat
                     history,
                 },
             });
-            // dispatch(saveAnnotationsAsync(sessionInstance));
-
+            await dispatch(saveAnnotationsAsync(sessionInstance));
 
         } catch (error) {
             dispatch({

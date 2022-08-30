@@ -517,6 +517,21 @@
                 }
             }
 
+            async function saveBulkDelete(id, deleteData) {
+                const { backendAPI } = config;
+
+                try {
+                    await Axios.post(`${backendAPI}/delete-frames/${id}/bulk_delete`, JSON.stringify(deleteData), {
+                        proxy: config.proxy,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+            }
+
             async function deleteProject(id) {
                 const { backendAPI } = config;
 
@@ -1950,6 +1965,21 @@
                 return response.data;
             }  
 
+            async function getSrMainAndTrackId(id) {
+                const { backendAPI } = config;
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/get-track-ids/${id}/data`,{                      
+                      proxy: config.proxy,
+                    });
+
+                }    catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }  
+
             async function getMembershipInvitation(id) {
                 const { backendAPI } = config;
 
@@ -2033,7 +2063,9 @@
                             getCorrectorData:getCorrectorData,
                             saveLabelCorrectorAttributeData:saveLabelCorrectorAttributeData,
                             saveSrInvisibleLabelCorrectorAttributeData:saveSrInvisibleLabelCorrectorAttributeData,
-                            getTrackedFrameSummary:getTrackedFrameSummary
+                            getTrackedFrameSummary:getTrackedFrameSummary,
+                            getSrMainAndTrackId:getSrMainAndTrackId,
+                            saveBulkDelete:saveBulkDelete,
                         }),
                         writable: false,
                     },

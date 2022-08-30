@@ -36,6 +36,7 @@ router.register('save-label-corrector-attribute',additional_views.LabelCorrector
 router.register('save-sr-invisible-frame-info',additional_views.SaveSRVisibleData,basename='taskssrinvisbleframes')
 router.register('get-tracked-frame-summary',additional_views.JobTrackSummary,basename='tasksjobsframessummary')
 router.register('get-track-ids',additional_views.GetTrackIds ,basename='trackids')
+router.register('delete-frames',additional_views.BlukDeleteFrames ,basename='deleteframes')
 # router.register('im',views.CatViewSet)
 
 urlpatterns = [

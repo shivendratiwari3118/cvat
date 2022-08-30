@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button } from "antd";
 import "antd/dist/antd.css";
 import "./index.css";
-import { Layout, Input, Card } from "antd";
+import { Layout, Input, Card,Space } from "antd";
 import { RadiusUprightOutlined } from "@ant-design/icons";
 import serverProxy from "../../../../cvat-core/src/server-proxy";
 import { useSelector } from "react-redux";
@@ -29,6 +29,11 @@ const Signs: React.FC<Props> = ({ attrid,clientID }: Props) => {
   const [imgname, setImgname] = useState("");
   const [signattr, setSignsattr] = useState("");
   const [project_type,setProjectType] = useState("");
+  const [newvisible, setNewVisible] = useState(false);
+  const [prefixsign,setPrefixsign] = useState("");
+  const [supfixsign,setSupfixsign] = useState("");
+  const [emptyinput, setEmptyInput] = useState("")
+  const [confirmload, setConfirmload] = useState(true);
 
 
   const currentJob = useSelector((state) => state);
@@ -72,6 +77,31 @@ const Signs: React.FC<Props> = ({ attrid,clientID }: Props) => {
     });
   };
 
+  const regexModal = (imgname) => {
+    const split_sign = imgname.split('_TexRegExp_');
+    if (split_sign.length > 1) {
+        setNewVisible(true);
+        setConfirmload(true);
+        setEmptyInput('');
+        setPrefixsign(split_sign[0]);
+        setSupfixsign(split_sign[1]);
+    }
+};
+
+function handleValidator(event) {
+  setEmptyInput(event.target.value)  
+  const regex_matched  = event.target.value.match(supfixsign)
+  if (regex_matched){
+    setConfirmload(false);
+      const new_value = prefixsign+ "_" + event.target.value
+      // setPrefixsign(new_value)
+      document.getElementById("setprefix").value = new_value
+      setImgname(new_value)
+  }else{
+    setConfirmload(true);
+  }
+}
+
   const SignRenderNode = (data) => {
     return data.data.map((obj) =>
       Object.entries(obj).map(([key, value]) => (
@@ -82,6 +112,7 @@ const Signs: React.FC<Props> = ({ attrid,clientID }: Props) => {
               setDescription(value.description),
                 setImgattr(value.imagepath),
                 setImgname(value.signname);
+                regexModal(value.signname);
                 {project_type == "label_mode_eva"? setSignsattr(value.label_mode_eva.substr(2).replace("'","")) :setSignsattr(value.label_mode_dev.substr(2).replace("'",""))}
             }}
             className="signs"
@@ -318,6 +349,36 @@ const Signs: React.FC<Props> = ({ attrid,clientID }: Props) => {
           </Layout>
         </>
       </Modal>
+      <Modal
+                title='Supplementary sign class explanation'
+                centered
+                confirmLoading={confirmload}
+                visible={newvisible}
+                onOk={() => sendSignName(imgname, attrid)}
+                onCancel={() => setNewVisible(false)}
+                width={800}
+            >
+                <Space direction='vertical' style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
+                        Validation Pattern&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <Input placeholder='' value={supfixsign} disabled={true} style={{color:"black"}}/>
+                    </div>
+                    <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
+                        Sign Supplementary Text &nbsp;&nbsp;&nbsp;&nbsp;
+                        <Input placeholder='' value={emptyinput} style={{ backgroundColor: confirmload ? 'red' : 'green', }} onChange={handleValidator}/>
+                    </div>
+                    <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
+                        Resulting Description &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <Input placeholder='' value='_TexRegExp_' disabled={true} style={{color:"black"}} />
+                    </div>
+                    <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
+                        Prefix
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <Input id="setprefix" placeholder='' value={imgname} style={{color:"black"}}/>
+                    </div>
+                </Space>
+            </Modal>
     </>
   );
 };

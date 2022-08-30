@@ -792,6 +792,11 @@ class LabelSaveSerializer(serializers.Serializer):
     attribute_name = serializers.CharField(max_length=64)
     attribute_val = serializers.CharField(max_length=64)
 
+class BulkDeleteSerializer(serializers.Serializer):
+    # points = serializers.CharField(max_length=100)
+    track_id = serializers.IntegerField(required=True)
+    frame = serializers.IntegerField(required=False)
+    next_frame = serializers.IntegerField(required=False)
     
 class LogEventSerializer(serializers.Serializer):
     job_id = serializers.IntegerField(required=False)

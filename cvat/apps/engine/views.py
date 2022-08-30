@@ -1560,7 +1560,22 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
     def annotations(self, request, pk):
         self.get_object() # force to call check_object_permissions
         if request.method == 'GET':
-            data = dm.task.get_job_data(pk)
+            # data = dm.task.get_job_data(pk)
+            # added for job merge and stitch req...
+            job_object = Job.objects.get(id=pk)
+            task_object = Task.objects.get(id=job_object.get_task_id())
+            if task_object.segment_set.count() > 1 and int(pk) == task_object.segment_set.last().job_set.last().id:
+                job_ids = [i[0] for i in task_object.segment_set.values_list('job__id')]
+                for num,item in enumerate(job_ids):
+                    if num == 0:
+                        data = dm.task.get_job_data(item)
+                    else:
+                        new_data = dm.task.get_job_data(item)
+                        data['tracks'] = data['tracks'] + new_data['tracks']
+                # data = dm.task.get_job_data(pk)
+            else:
+                data = dm.task.get_job_data(pk)
+            # end job merge and stitch req...
             return Response(data)
         elif request.method == 'PUT':
             format_name = request.query_params.get("format", "")
@@ -2246,7 +2261,7 @@ def _export_annotations(db_instance, rq_id, request, format_name, action, callba
                     #try:
                     occ.output_conversion_objectlabel(labelfile_input_path, input_h5_file, task_name, login_name)
                     occ.output_conversion_scenelabel(labelfile_input_path, input_h5_file, task_name, login_name)
-                    tool_validation(input_h5_file+"SR_ObjectLabels.json")
+                    tool_validation(input_h5_file+str(task_name)+"_ObjectLabels.json")
                     os.chdir(input_h5_file)
                     with zipfile.ZipFile('hello.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
                         zipdir(input_h5_file, zipf)

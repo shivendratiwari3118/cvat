@@ -71,6 +71,7 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
       setEnd(null);
     }
   };
+  console.log("currentFrame", currentFrame)
 
   React.useEffect(() => {
     //Don't know how to find the currentFrame number , so default it to 1
@@ -125,43 +126,15 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
         };
   
         const apiResponse = await payLoadPostAPI(payLoad);
-        console.log('getOrganizations succccccc',apiResponse);
-        if(apiResponse.message ==true){
-          setFlag(true)
-          // isSuccessFun()
-          setReloadRequire(true)
-          let i = 1;
-          console.log('bulk succccccc', currentFrame, i++);
-          console.log('bulk currentFrame', currentFrame > end);
-          // if(currentFrame !> end ){
-          //  window.location.reload();
-          changeAttribute(attrID, 'true');
-          // dispatch(saveAnnotationsAsync(jobInstance));
-          // dispatch(changeFrameAsync(currentFrame));
-          console.log('bulk succccccc');
-          // }
-         // dispatch(getOrganizationsAsync());
-          //  window.location.reload();
-          // const taskId = 125
-        //  const session = 'job'
-         
-        //  push(`/tasks/${taskId}/jobs/${jobId}`);
-        //  getAnnotationsApi(session,jobId)
-          // serverProxy.annotations
-          // .getAnnotations(session,jobId)
-          //   .then((result: any) => {
-          //     console.log('getOrganizations succccccc',result);
-          //     return result;
-          //   })
-          //   .catch((error: any) => {
-          //     return error;
-          //   })
-        
+        console.log('getOrganizations succccccc',apiResponse.message == true);
+        if(apiResponse.message == true){    
+          console.log("changeAttribute is calling")      
+         await changeAttribute(attrID, 'true');
+         dispatch(saveAnnotationsAsync(jobInstance))
         }
-
         setIsModalVisible(false);
       } catch (err) {
-        console.log(err);
+        console.log("error",err);
       }
     }else{
       setErr(true);

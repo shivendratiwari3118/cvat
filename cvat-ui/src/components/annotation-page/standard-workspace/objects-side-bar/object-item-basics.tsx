@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'antd/lib/grid';
 import { MoreOutlined } from '@ant-design/icons';
 import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
-
+import serverProxy from 'cvat-core/src/server-proxy';
 import { ObjectType, ShapeType, ColorBy } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import LabelSelector from 'components/label-selector/label-selector';
@@ -93,24 +93,62 @@ function ItemTopComponent(props: Props): JSX.Element {
         setColorPickerVisible(visible);
     };
 
-    // const getTrackID = () => {
-    //     let track_ids = localStorage.getItem("track-ids");
-    //     track_ids = JSON.parse(track_ids);
-    //     let track_id = track_ids.filter((item: any) => {
-    //         if (item[serverID] !== undefined) {
-    //             return item
-    //         }
-    //     })
-    //     return track_id[0][serverID];
-    
-    // }
-    // let trackID = getTrackID();
-    // console.log("trackID object-->",trackID);
+    const [currentId,setCurrentId] = useState(0);
+
+    async function updateAgain(){
+        serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
+        .then((data) => {
+                let currObj = data.track_ids.filter((item:any) => {
+                    let ko = Object.keys(item);
+                    if(Number(ko[0]) === serverID){
+                        return item;
+                    }
+                })
+                if(currObj.length < 1){
+                    if(data.track_ids.length < 1){
+                        setCurrentId(0);
+                    }else{
+                        let obj = data.track_ids[data.track_ids.length - 1];
+                        let vals = Object.values(obj);
+                        let val = Number(vals[0]) + 1;
+                        setCurrentId(val);
+                    }
+                }else{
+                    let values = Object.values(currObj[0]);
+                    setCurrentId(values[0]);     
+                }
+        })  
+        .catch(err => console.log(err));
+    }
+
+    async function updatetrackId(){
+        serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
+            // .then((response) => response.json())
+            .then((data) => {
+                let currObj = data.track_ids.filter((item:any) => {
+                    let ko = Object.keys(item);
+                    if(Number(ko[0]) === serverID){
+                        return item;
+                    }
+                })
+                if(currObj.length < 1){
+                    updateAgain();
+                }else{
+                    let values = Object.values(currObj[0]);
+                    setCurrentId(values[0]);
+                }
+            })  
+            .catch(err => console.log(err));
+    }
+
+    useEffect(()=>{
+        updatetrackId();
+    },[]);
     
     return (
         <Row align='middle'>
             <Col span={10}>
-                <Text style={{ fontSize: 12 }}>{`${serverID} ( ${clientID})`}</Text>
+            <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text>
                 <br />
                 <Text
                     type='secondary'

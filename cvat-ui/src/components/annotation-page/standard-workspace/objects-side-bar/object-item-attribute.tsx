@@ -71,6 +71,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
     const popOverHide = (a: boolean) =>{
         setRightClick(a)
     }
+    console.log("currentFrame", currentFrame)
 
     if (attrInputType === 'checkbox') {
         return (
@@ -103,7 +104,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                  />      
                     :          
                     <Popover
-                        content={<AttributeBulkUpdate AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                        content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
                         placement="bottom"
                         title=""
                         trigger="click"
@@ -184,7 +185,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         />      
                         :          
                         <Popover
-                            content={<AttributeBulkUpdate AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                            content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
                             placement="bottom"
                             title=""
                             trigger="click"
@@ -234,7 +235,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         />      
                         :          
                         <Popover
-                            content={<AttributeBulkUpdate AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                            content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
                             placement="bottom"
                             title=""
                             trigger="click"
