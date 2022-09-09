@@ -361,10 +361,13 @@ class TrackManager(ObjectManager):
     def to_shapes(self, end_frame):
         shapes = []
         for idx, track in enumerate(self.objects):
+            print(idx,"idx")
+            print(track,"track")
             for shape in TrackManager.get_interpolated_shapes(track, 0, end_frame):
                 shape["label_id"] = track["label_id"]
                 shape["group"] = track["group"]
-                shape["track_id"] = idx
+                shape["track_id"] = track['id']
+                # shape["track_id"] = idx
                 shape["attributes"] += track["attributes"]
                 shapes.append(shape)
         return shapes
@@ -721,8 +724,9 @@ class TrackManager(ObjectManager):
         curr_frame = track["shapes"][0]["frame"]
         prev_shape = {}
         for shape in track["shapes"]:
+            print("shapeeeeeeeeeeeeeeeeeeeeeeeeee", shape)
             if prev_shape:
-                assert shape["frame"] > curr_frame
+                #assert shape["frame"] >= curr_frame
                 for attr in prev_shape["attributes"]:
                     if attr["spec_id"] not in map(lambda el: el["spec_id"], shape["attributes"]):
                         shape["attributes"].append(deepcopy(attr))
@@ -733,6 +737,7 @@ class TrackManager(ObjectManager):
             shapes.append(shape)
             curr_frame = shape["frame"]
             prev_shape = shape
+            print("curr_frameeeeeeeeeeeeee", curr_frame, "prev_shapeeeeeeeeeeeeeee", prev_shape)
 
             # keep at least 1 shape
             if end_frame <= curr_frame:

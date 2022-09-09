@@ -362,7 +362,7 @@ function handleValidator(event) {
                     <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
                         Validation Pattern&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <Input placeholder='' value={supfixsign} disabled={true} style={{color:"black"}}/>
+                        <Input placeholder='' value={supfixsign}  style={{color:"black"}}/>
                     </div>
                     <div style={{ display: 'flex', whiteSpace: 'nowrap', alignItems: 'center' }}>
                         Sign Supplementary Text &nbsp;&nbsp;&nbsp;&nbsp;

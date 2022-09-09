@@ -65,7 +65,6 @@ def _merge_table_rows(rows, keys_for_merge, field_id):
     for i in merged_rows:
         for j in redundant_keys:
             del merged_rows[i][j]
-
     return list(merged_rows.values())
 
 class JobAnnotation:
@@ -596,6 +595,7 @@ class TaskAnnotation:
             self._merge_data(annotation.ir_data, start_frame, overlap)
 
     def export(self, dst_file, exporter, host='', **options):
+        print("we are at task.TaskAnnotation.export")
         task_data = TaskData(
             annotation_ir=self.ir_data,
             db_task=self.db_task,
@@ -708,6 +708,8 @@ def delete_task_data(pk):
 
 def export_task(task_id, dst_file, format_name,
         server_url=None, save_images=False):
+    print("we are here dm.task.export_task")
+    
     # For big tasks dump function may run for a long time and
     # we dont need to acquire lock after the task has been initialized from DB.
     # But there is the bug with corrupted dump file in case 2 or
@@ -718,6 +720,8 @@ def export_task(task_id, dst_file, format_name,
         task.init_from_db()
 
     exporter = make_exporter(format_name)
+    print(exporter,"exporter")
+
     with open(dst_file, 'wb') as f:
         task.export(f, exporter, host=server_url, save_images=save_images)
 

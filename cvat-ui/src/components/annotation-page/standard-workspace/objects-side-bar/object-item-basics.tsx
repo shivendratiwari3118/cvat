@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState, useEffect } from 'react';
-import { Row, Col } from 'antd/lib/grid';
-import { MoreOutlined } from '@ant-design/icons';
+import { Row, Col, Button} from 'antd/lib/grid';
+import { MoreOutlined, DeleteOutlined } from '@ant-design/icons';
+import Modal from 'antd/lib/modal';
 import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
 import serverProxy from 'cvat-core/src/server-proxy';
 import { ObjectType, ShapeType, ColorBy } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import LabelSelector from 'components/label-selector/label-selector';
-import ItemMenu from './object-item-menu';
+import ItemMenu, { RemoveItem } from './object-item-menu';
 
 interface Props {
     jobInstance: any;
@@ -45,7 +46,15 @@ interface Props {
     resetCuboidPerspective(): void;
 }
 
-function ItemTopComponent(props: Props): JSX.Element {
+interface abcd {
+    changeColorPickerVisible(visible: boolean): void;
+    colorPickerVisible: boolean;
+}
+
+type Pprops = Props & abcd;
+// const mainProps = Props && abcd
+
+function ItemTopComponent(props: Pprops): JSX.Element {
     const {
         readonly,
         clientID,
@@ -144,6 +153,15 @@ function ItemTopComponent(props: Props): JSX.Element {
     useEffect(()=>{
         updatetrackId();
     },[]);
+
+    // const handleDeleteClick = () => {
+    //     return(
+    //         <>
+    //             <RemoveItem toolProps={props}/>
+    //         </>
+    //     )
+
+    // }
     
     return (
         <Row align='middle'>
@@ -207,6 +225,9 @@ function ItemTopComponent(props: Props): JSX.Element {
                     <MoreOutlined />
                 </Dropdown>
             </Col>
+            <div style={{marginBottom:"-83px", marginLeft: '5px'}}>                
+                <DeleteOutlined />
+            </div>
         </Row>
     );
 }

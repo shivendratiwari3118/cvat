@@ -7,7 +7,7 @@ import { Input} from 'antd';
 import { LeftCircleFilled, RightCircleFilled } from '@ant-design/icons';
 import { Typography } from 'antd';
 import serverProxy from 'cvat-core/src/server-proxy';
-import { changeFrameAsync } from 'actions/annotation-actions';
+import { changeFrameAsync, activateObject as  activateObjectAction } from 'actions/annotation-actions';
 import { useDispatch } from 'react-redux';
 
 import './object-label-summary.css';
@@ -73,30 +73,39 @@ const ObjectLabelSummary = () => {
         dispatch(changeFrameAsync(frame?.end_frame));
     }
 
+    let totalRowCount = data.length
+    let sum = 0;
+
+    const abc= data.map(item => item)
+    console.log("abc", abc);
+    data.forEach(num => {
+        sum += num.count;
+    });
+
     const columns: ColumnsType<DataType> = [   
         {
-          title: 'Track Id',
-          width:15,
+          title: `Track Id (${totalRowCount})`,
+          width:35,
           dataIndex: 'item_id',
           render: text => {
           return(<a>{text}</a>)
         }
         },
         {
-          title: 'Category',
-          width:20,
+          title: `Category (${totalRowCount})`,
+          width:35,
           className: 'column-money',
           dataIndex: 'label',
         },
         {
-          title: 'Frame Count',
+          title:  `Frame Count (${sum})`,
           dataIndex: 'count',
           width: 30
         },
         {
-          title: 'Navigation',
+          title: `Navigation (${totalRowCount})`,
           dataIndex: 'start_frame',
-          width:20,
+          width:40,
           render: () => 
             <a>
                 <Tooltip title={selectedRowData?.start_frame} ><LeftCircleFilled style={{marginRight: '10px'}} onClick={() => handleLeftArrowClick(selectedRowData)} /></Tooltip> 
@@ -105,7 +114,7 @@ const ObjectLabelSummary = () => {
            
         },
         {
-          title: 'Sign Class',
+          title: `Signn Class (${totalRowCount})`,
           dataIndex: 'action',
           width:60,
           render: (_, record:any) => {
@@ -127,13 +136,7 @@ const ObjectLabelSummary = () => {
         });
 
     },[])
-    
-    let sum = 0;
-    data.forEach(num => {
-        sum += num.count;
-    });
-    console.log("data", data)
-   
+
     return (
         <>
             <Row>
@@ -166,6 +169,7 @@ const ObjectLabelSummary = () => {
                     return {
                       onClick: (event:any) => {
                         setSelectedRow(record)
+                        dispatch(activateObjectAction(record.track_id, null));
                       }, 
                       onMouseEnter: (event:any) => {
                         setSelectedRowData(record)

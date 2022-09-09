@@ -1102,6 +1102,7 @@ class CvatTaskDataExtractor(datum_extractor.SourceExtractor, CVATDataExtractorMi
                     for (idx, (_, label)) in enumerate(task_data.meta['task']['labels']):
                         attributes["labels"].append({"label_id": idx, "name": label["name"], "color": label["color"]})
                         attributes["track_id"] = -1
+                        print('attributes["track_id"] = -1',attributes["track_id"])
 
                 dm_item = datum_extractor.DatasetItem(
                     id=osp.splitext(osp.split(frame_data.name)[-1])[0],

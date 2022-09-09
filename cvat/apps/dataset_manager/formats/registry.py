@@ -93,6 +93,7 @@ def make_importer(name):
     return IMPORT_FORMATS[name]()
 
 def make_exporter(name):
+    print("format name ",name,EXPORT_FORMATS[name]())
     return EXPORT_FORMATS[name]()
 
 

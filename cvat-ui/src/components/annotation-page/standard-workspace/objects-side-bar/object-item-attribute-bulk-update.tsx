@@ -113,7 +113,7 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
   const bulkUpdateAttributes = async () => {
     if(start !== null && end !== null){
       try {
-        await dispatch(saveAnnotationsAsync(jobInstance))
+        // await dispatch(saveAnnotationsAsync(jobInstance))
         const payLoad: payLoadProps = {
           start_frame: start,
           end_frame: Number(end) + 1,
@@ -128,9 +128,10 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
         const apiResponse = await payLoadPostAPI(payLoad);
         console.log('getOrganizations succccccc',apiResponse.message == true);
         if(apiResponse.message == true){    
-          console.log("changeAttribute is calling")      
-         await changeAttribute(attrID, 'true');
-         dispatch(saveAnnotationsAsync(jobInstance))
+          console.log("changeAttribute is calling")  
+          window.location.reload()    
+        //  await changeAttribute(attrID, 'true');
+        //  dispatch(saveAnnotationsAsync(jobInstance))
         }
         setIsModalVisible(false);
       } catch (err) {

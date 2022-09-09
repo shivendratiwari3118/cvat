@@ -100,6 +100,7 @@ def export_task_as_dataset(task_id, dst_format=None, server_url=None):
     return export(dst_format, task_id=task_id, server_url=server_url, save_images=True)
 
 def export_task_annotations(task_id, dst_format=None, server_url=None):
+    print("we are here dm.views.export_task_annotations")
     return export(dst_format,task_id=task_id, server_url=server_url, save_images=False)
 
 def export_project_as_dataset(project_id, dst_format=None, server_url=None):

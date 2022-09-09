@@ -16,6 +16,7 @@ import Icon, {
     SelectOutlined,
     StarOutlined,
     EyeOutlined,
+    DeleteOutlined,
     RadiusUprightOutlined ,
 } from '@ant-design/icons';
 import CVATTooltip from 'components/common/cvat-tooltip';
@@ -257,6 +258,9 @@ function ItemButtonsComponent(props: Props): JSX.Element {
                     </Row>
                     {!readonly && (
                         <Row justify='space-around'>
+                            {/* <Col>
+                                <DeleteOutlined />
+                            </Col> */}
                             <Col>
                                 <SwitchOutside {...props} />
                             </Col>

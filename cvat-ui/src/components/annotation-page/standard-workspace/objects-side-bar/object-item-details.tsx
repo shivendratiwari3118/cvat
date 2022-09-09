@@ -5,7 +5,7 @@
 import React from 'react';
 import { Row } from 'antd/lib/grid';
 import Collapse from 'antd/lib/collapse';
-
+import {DeleteOutlined} from '@ant-design/icons'
 import ItemAttribute from './object-item-attribute';
 import Corrector from './labelGenerator/corrector';
 
@@ -50,6 +50,9 @@ function ItemAttributesComponent(props: Props): JSX.Element {
 
     return (
         <Row>
+            {/* <div style={{marginTop: '-23px', marginLeft:'6px'}}>
+            <DeleteOutlined />
+            </div> */}
             <Corrector AnnotationId={AnnotationId} attributes={attributes} jobInstance={jobInstance} popOverHide={popOverHide}/>
             <Collapse
                 className='cvat-objects-sidebar-state-item-collapse'

@@ -254,7 +254,9 @@ def return_track_summary(pk):
                 pass
         last_frame_outside = max(new_dict[item.id]['ids'])
         outside = TrackedShape.objects.get(id=last_frame_outside).outside
+        remove_extra_step = 1
         if outside == False:
+            remove_extra_step = 0
             new_dict[item.id]['frames'].append(job.segment.stop_frame)
         if new_sign_class:
             new_dict[item.id]['sign_class'] = new_sign_class.pop()
@@ -269,7 +271,7 @@ def return_track_summary(pk):
             new_dict[item.id]['sign_class_img'] = ''
         new_dict[item.id]['count'] = max(new_dict[item.id]['frames']) - min(new_dict[item.id]['frames']) + 1
         new_dict[item.id]['start_frame'] = min(new_dict[item.id]['frames'])
-        new_dict[item.id]['end_frame'] = max(new_dict[item.id]['frames'])
+        new_dict[item.id]['end_frame'] = max(new_dict[item.id]['frames']) - remove_extra_step # - remove_extra_step added because to remove next step
         new_dict[item.id]['track_id'] = track_count
         new_dict[item.id]['item_id'] = item.id
 

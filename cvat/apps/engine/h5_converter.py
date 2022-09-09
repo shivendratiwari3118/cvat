@@ -70,7 +70,8 @@ def converter_webm(filename):
         ffmpeg_output = 'ffmpeg -hwaccel cuda -framerate 12 -i "%d.jpeg" -c:v libx264 -pix_fmt yuv420p '+ str(fn) +'.mp4'
         os.system(ffmpeg_output)
 
-        ends=(".jpeg", ".h5")
+        #ends=(".jpeg", ".h5")
+        ends=(".jpeg")
         for f in os.listdir(output_path):
             if not f.endswith(ends):
                 continue
