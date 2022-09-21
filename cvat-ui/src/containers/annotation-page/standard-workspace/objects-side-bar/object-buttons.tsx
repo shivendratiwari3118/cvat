@@ -103,7 +103,7 @@ class ItemButtonsWrapper extends React.PureComponent<StateToProps & DispatchToPr
         const { objectState, frameNumber } = this.props;
         const { last } = objectState.keyframes;
         if (last !== frameNumber) {
-            this.changeFrame(last);
+            this.changeFrame(last-1);
         }
     };
 

@@ -3,16 +3,21 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Button} from 'antd/lib/grid';
-import { MoreOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Radio } from 'antd';
+import Button from 'antd/lib/button';
+import InputNumber from 'antd/lib/input-number';
+import type { RadioChangeEvent } from 'antd';
+import Menu from 'antd/lib/menu';
 import Modal from 'antd/lib/modal';
+import { MoreOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Row, Col} from 'antd/lib/grid';
 import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
 import serverProxy from 'cvat-core/src/server-proxy';
 import { ObjectType, ShapeType, ColorBy } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import LabelSelector from 'components/label-selector/label-selector';
-import ItemMenu, { RemoveItem } from './object-item-menu';
+import ItemMenu from './object-item-menu';
 
 interface Props {
     jobInstance: any;
@@ -89,6 +94,76 @@ function ItemTopComponent(props: Pprops): JSX.Element {
 
     const [menuVisible, setMenuVisible] = useState(false);
     const [colorPickerVisible, setColorPickerVisible] = useState(false);
+    const [option, setOption] = useState<string>('current-frame');
+    const [startFrame, setStartFrame] = useState<number>(0);
+    const [endFrame, setEndFrame] = useState<number>(0);
+    // const { toolProps, ...rest } = props;
+    // const { removeShortcut, locked, remove, serverID } = toolProps;
+
+    const [start, setStart] = useState<any>();
+    const [end, setEnd] = useState<any>(null);
+    const [value, setValue] = useState(1);
+    const currentFrameValue = localStorage.getItem('frameNumber')
+
+    const onRadioChange = (e: RadioChangeEvent) => {
+        setValue(e.target.value);
+        if(e.target.value === 5){
+          setStart(null);
+          setEnd(null);
+        }
+      };
+
+
+  React.useEffect(() => {    
+    if (value == 1) {
+      setStart(currentFrameValue);
+      setEnd(currentFrameValue);
+    } else if (value == 2) {
+      setStart(currentFrameValue);
+      setEnd(jobInstance.stopFrame);
+    } else if (value == 3) {
+    //   setStart(jobInstance.startFrame);
+    console.log("value 3")
+    const sFrame = 'start'
+      setStart(sFrame);
+      setEnd(currentFrameValue);
+    }
+    else if (value == 4) {
+        // setStart(jobInstance.startFrame);
+        setStart("start");
+        setEnd(jobInstance.stopFrame);
+      }
+      
+  }, [value]);   
+
+    const frames_delete = {        
+        first: start,
+        last: end,
+    };
+
+    console.log(start, "start", frames_delete)
+   
+    window.localStorage.setItem('delete_frames', JSON.stringify(frames_delete));
+
+    const handleRemoveAnnotation = (): void => {        
+        const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
+        console.log("delete_frames", delete_frames)
+        const payLoad: payLoadProps = {
+            frame: delete_frames.first,
+            next_frame: parseInt(delete_frames.last) + 1,
+            track_id: serverID,
+        };
+
+        serverProxy.jobs
+            .saveBulkDelete(jobInstance.id, payLoad)
+            .then((result: any) => {
+                window.location.reload();
+                return result;
+            })
+            .catch((error: any) => {
+                return error;
+            });
+    };
 
     const changeMenuVisible = (visible: boolean): void => {
         if (!visible && colorPickerVisible) return;
@@ -132,7 +207,6 @@ function ItemTopComponent(props: Pprops): JSX.Element {
 
     async function updatetrackId(){
         serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
-            // .then((response) => response.json())
             .then((data) => {
                 let currObj = data.track_ids.filter((item:any) => {
                     let ko = Object.keys(item);
@@ -154,19 +228,16 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         updatetrackId();
     },[]);
 
-    // const handleDeleteClick = () => {
-    //     return(
-    //         <>
-    //             <RemoveItem toolProps={props}/>
-    //         </>
-    //     )
-
-    // }
+    
+    enum MenuKeys {        
+        REMOVE_ITEM = 'remove_item',
+    }
     
     return (
         <Row align='middle'>
             <Col span={10}>
-            <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text>
+            <Text style={{ fontSize: 12 }}>{`${serverID}`}</Text>
+            {/* <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text> */}
                 <br />
                 <Text
                     type='secondary'
@@ -225,8 +296,57 @@ function ItemTopComponent(props: Pprops): JSX.Element {
                     <MoreOutlined />
                 </Dropdown>
             </Col>
-            <div style={{marginBottom:"-83px", marginLeft: '5px'}}>                
-                <DeleteOutlined />
+            <div style={{marginBottom:"-86px", marginLeft: '-10px'}}>                
+            <Button style={{color: 'black'}} key={MenuKeys.REMOVE_ITEM} type='link' onClick={(): void => {
+                        Modal.info({
+                            className: 'cvat-modal-confirm',
+                            title: 'Delete Annotation',
+                            onOk() {
+                                if (locked) {
+                                    Modal.confirm({
+                                        className: 'cvat-modal-confirm',
+                                        title: 'Object is locked',
+                                        content: 'Are you sure you want to remove it?',
+                                        onOk() {
+                                            remove();
+                                        },
+                                    });
+                                } else {
+                                    handleRemoveAnnotation();
+                                }
+                            },
+                            content: (
+                                <>
+                                    <Row align='middle' justify='space-between'>
+                                        <div className='delete-head'>
+                                            <p>Single ROI for deletion</p>
+                                        </div>
+                                        <Radio.Group className='radio-container' onChange={onRadioChange}>
+                                            <Radio value={1}>Current Frame</Radio>
+                                            <Radio value={2}>
+                                                Current Frame to End Frame
+                                            </Radio>
+                                            <Radio value={3}>
+                                                Start Frame to Current Frame
+                                            </Radio>
+                                            <Radio value={4}>Start Frame to End Frame</Radio>
+                                            <Radio value={5}>
+                                                Enter Start Frame &nbsp;
+                                                <InputNumber  min={1} onChange={(value:number) => setStart(value)} />
+                                                
+                                                to End &nbsp;Frame &nbsp;
+                                                <InputNumber    min={start} onChange={(value: number) => setEnd(value)} />
+                                               
+                                            </Radio>
+                                        </Radio.Group>
+                                    </Row>
+
+                                </>
+                            ),
+                        });
+                    }} >
+            <DeleteOutlined />
+            </Button>
             </div>
         </Row>
     );

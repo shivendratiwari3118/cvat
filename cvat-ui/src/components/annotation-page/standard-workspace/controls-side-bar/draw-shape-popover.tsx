@@ -148,12 +148,12 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                     </Col>
                 </Row>
             ) : null}
-            <Row justify='space-around'>
-                <Col span={12}>
+            <Row justify='center'>
+                {/* <Col span={12}>
                     <CVATTooltip title={`Press ${repeatShapeShortcut} to draw again`}>
                         <Button onClick={onDrawShape}>Shape</Button>
                     </CVATTooltip>
-                </Col>
+                </Col> */}
                 {is2D && (
                     <Col span={12}>
                         <CVATTooltip title={`Press ${repeatShapeShortcut} to draw again`}>

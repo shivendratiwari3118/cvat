@@ -193,7 +193,7 @@ function RemoveItem(props: ItemProps): JSX.Element {
     const [startFrame, setStartFrame] = useState<number>(0);
     const [endFrame, setEndFrame] = useState<number>(0);
     const { toolProps, ...rest } = props;
-    const { removeShortcut, locked, remove, serverID } = toolProps;
+    const { removeShortcut, locked, remove, serverID, jobInstance } = toolProps;
 
     const handleOptionSelect = (e: Object): any => {
         setOption(e.target.value);
@@ -224,19 +224,16 @@ function RemoveItem(props: ItemProps): JSX.Element {
         };
 
         serverProxy.jobs
-            .saveBulkDelete(65, payLoad)
+            .saveBulkDelete(jobInstance.id, payLoad)
             .then((result: any) => {
-                console.log('updated see');
                 window.location.reload();
                 return result;
             })
             .catch((error: any) => {
                 return error;
             });
-        console.log('payLoad', payLoad);
     };
 
-    console.log(startFrame, endFrame, 'startFrame,endFrame');
     const frames_delete = {
         first: startFrame,
         last: endFrame,
@@ -369,7 +366,7 @@ export default function ItemMenu(props: Props): JSX.Element {
             {[ColorBy.INSTANCE, ColorBy.GROUP].includes(colorBy) && (
                 <SwitchColorItem key={MenuKeys.SWITCH_COLOR} toolProps={props} />
             )}
-            {!readonly && <RemoveItem key={MenuKeys.REMOVE_ITEM} toolProps={props} />}
+            {/* {!readonly && <RemoveItem key={MenuKeys.REMOVE_ITEM} toolProps={props} />} */}
         </Menu>
     );
 }

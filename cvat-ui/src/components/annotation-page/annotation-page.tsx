@@ -21,6 +21,7 @@ import { Workspace } from 'reducers/interfaces';
 import { usePrevious } from 'utils/hooks';
 import './styles.scss';
 import Button from 'antd/lib/button';
+import { changeFrameAsync } from 'actions/annotation-actions';
 
 interface Props {
     job: any | null | undefined;
@@ -96,6 +97,7 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
                         className: 'cvat-notification-continue-job',
                     });
                 }
+                changeFrame(parsedFrame);
             }
 
             if (!job.labels.length) {

@@ -269,9 +269,10 @@ def return_track_summary(pk):
         else:
             new_dict[item.id]['sign_class'] = ''
             new_dict[item.id]['sign_class_img'] = ''
-        new_dict[item.id]['count'] = max(new_dict[item.id]['frames']) - min(new_dict[item.id]['frames']) + 1
+        new_dict[item.id]['count'] = max(new_dict[item.id]['frames']) - min(new_dict[item.id]['frames'])
         new_dict[item.id]['start_frame'] = min(new_dict[item.id]['frames'])
         new_dict[item.id]['end_frame'] = max(new_dict[item.id]['frames']) - remove_extra_step # - remove_extra_step added because to remove next step
+        if new_dict[item.id]['end_frame'] > job.segment.stop_frame:new_dict[item.id]['end_frame'] = job.segment.stop_frame # added to hanlde last frame
         new_dict[item.id]['track_id'] = track_count
         new_dict[item.id]['item_id'] = item.id
 
@@ -303,7 +304,11 @@ class BlukDeleteFrames(viewsets.ViewSet):
     def bulk_delete(self,request,pk):
         if request.method == "POST":
             # points = eval(request.data.get("points"))  
-            points = TrackedShape.objects.filter(track_id = request.data.get("track_id")).last().points 
+            points = TrackedShape.objects.filter(track_id = request.data.get("track_id")).last().points
+            # if TrackedShape.objects.get_or_no
+            if request.data.get("frame") == "start":
+                request.data['frame'] = TrackedShape.objects.filter(track_id = request.data.get("track_id")).first().frame
+            TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("frame")).delete() # added to hanlde to remove frames
             TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("frame"), outside=True, type = "rectangle", points = points )
             TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("next_frame"), outside=False, type = "rectangle", points = points )
         return Response({"message":"true"})

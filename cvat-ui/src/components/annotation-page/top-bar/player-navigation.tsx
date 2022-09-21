@@ -46,6 +46,11 @@ function PlayerNavigation(props: Props): JSX.Element {
             setFrameInputValue(frameNumber);
         }
     }, [frameNumber]);
+    
+    useEffect(() => {
+        let  latestFrame:any = frameNumber
+         localStorage.setItem('frameNumber', latestFrame)
+     },[frameNumber])
 
     return (
         <>

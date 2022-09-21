@@ -326,7 +326,7 @@ class Task(models.Model):
     bug_tracker = models.CharField(max_length=2000, blank=True, default="")
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-    overlap = models.PositiveIntegerField(default=0,null=True)
+    overlap = models.PositiveIntegerField(default=1,null=True)
     # Zero means that there are no limits (default)
     segment_size = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=32, choices=StatusChoice.choices(),

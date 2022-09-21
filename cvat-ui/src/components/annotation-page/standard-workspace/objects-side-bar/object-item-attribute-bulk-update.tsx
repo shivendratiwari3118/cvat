@@ -71,17 +71,17 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
       setEnd(null);
     }
   };
-  console.log("currentFrame", currentFrame)
+
+  const currentFrameValue = localStorage.getItem('frameNumber')
 
   React.useEffect(() => {
-    //Don't know how to find the currentFrame number , so default it to 1
     
     if (value == 1) {
-      setStart(currentFrame);
+      setStart(currentFrameValue);
       setEnd(jobInstance.stopFrame);
     } else if (value == 2) {
       setStart(1);
-      setEnd(currentFrame);
+      setEnd(currentFrameValue);
     } else if (value == 3) {
       setStart(jobInstance.startFrame);
       setEnd(jobInstance.stopFrame);
@@ -113,7 +113,6 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
   const bulkUpdateAttributes = async () => {
     if(start !== null && end !== null){
       try {
-        // await dispatch(saveAnnotationsAsync(jobInstance))
         const payLoad: payLoadProps = {
           start_frame: start,
           end_frame: Number(end) + 1,
@@ -126,12 +125,8 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
         };
   
         const apiResponse = await payLoadPostAPI(payLoad);
-        console.log('getOrganizations succccccc',apiResponse.message == true);
-        if(apiResponse.message == true){    
-          console.log("changeAttribute is calling")  
-          window.location.reload()    
-        //  await changeAttribute(attrID, 'true');
-        //  dispatch(saveAnnotationsAsync(jobInstance))
+        if(apiResponse.message == true){
+          window.location.reload()
         }
         setIsModalVisible(false);
       } catch (err) {
