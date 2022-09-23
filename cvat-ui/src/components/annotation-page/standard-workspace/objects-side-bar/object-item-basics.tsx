@@ -149,7 +149,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
         console.log("delete_frames", delete_frames)
         const payLoad: payLoadProps = {
-            frame: delete_frames.first,
+            frame: delete_frames.first == 'start' ? "start" : parseInt(delete_frames.first),
             next_frame: parseInt(delete_frames.last) + 1,
             track_id: serverID,
         };
@@ -157,7 +157,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         serverProxy.jobs
             .saveBulkDelete(jobInstance.id, payLoad)
             .then((result: any) => {
-                window.location.reload();
+                // window.location.reload();
                 return result;
             })
             .catch((error: any) => {

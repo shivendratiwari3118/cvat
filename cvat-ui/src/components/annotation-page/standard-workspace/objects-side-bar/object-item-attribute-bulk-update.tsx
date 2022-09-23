@@ -80,10 +80,10 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
       setStart(currentFrameValue);
       setEnd(jobInstance.stopFrame);
     } else if (value == 2) {
-      setStart(1);
+      setStart("start");
       setEnd(currentFrameValue);
     } else if (value == 3) {
-      setStart(jobInstance.startFrame);
+      setStart("start");
       setEnd(jobInstance.stopFrame);
     }
   }, [value]);

@@ -80,32 +80,18 @@ class ProjectExtraViewSet(viewsets.ModelViewSet):
 # end of laebl corrector
 
 class BulkUpdate(viewsets.ModelViewSet):
-    # queryset = AdditionalProjectInfo.objects.filter()
     queryset = ''
     serializer_class = SaveTrackSerializer
-# <'job_id': ['3'], 'trackid': ['33'], 'start_frame': ['333'], 'end_frame': ['33'], 'attribute_name': ['33'], 'attribute_val': ['33']}>
 
     @action(detail=True, methods=['OPTIONS', 'POST','PUT'], url_path=r'data')
     def data(self, request,pk):
-        # data = request.data
-        # trackid = int(request.data.get('trackid',1)) - 1
-        # labtr = LabeledTrack.objects.filter(job_id=int(request.data.get('job_id')))[trackid]
-        # # create_labeled_shape_frames_with_last_points = range(int(request.data.get('start_frame')),int(request.data.get('end_frame')))
-        # tshape = labtr.trackedshape_set.create(points=labtr.trackedshape_set.last().points,frame=int(request.data.get('start_frame')),type='rectangle')
-        # tshape_last = labtr.trackedshape_set.create(points=labtr.trackedshape_set.last().points,frame=int(request.data.get('end_frame')),type='rectangle')
-        # if int(labtr.trackedshape_set.last().frame)  > int(request.data.get('end_frame')):
-        #     frr = int(request.data.get('end_frame')) + 1
-        #     tshape_frame_last = labtr.trackedshape_set.create(points=labtr.trackedshape_set.last().points,frame=frr,type='rectangle')
-        #     tshape_frame_last.trackedshapeattributeval_set.create(spec = att)
-        # # att = AttributeSpec.objects.get(id=labtr.label_id)
-        # att = AttributeSpec.objects.filter(name=request.data.get("attribute_name")).last()
-        # tshape.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val").lower())
-        # tshape_last.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val").lower())
-        # att = AttributeSpec.objects.filter(name=request.data.get("attribute_name")).last()
-        # tshape = TrackedShape.objects.get(id=int(request.data.get('AnnotationId')))
+
         att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
         ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
         tshape = ltt.trackedshape_set.first() # FIXME i ah
+        if request.data.get('start_frame') == "start":
+            request.data['start_frame'] = tshape.frame
+            TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
         t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
         t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
         t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
