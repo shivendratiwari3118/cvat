@@ -116,6 +116,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
 
   React.useEffect(() => {    
     if (value == 1) {
+        console.log("currentFrameValue", currentFrameValue)
       setStart(currentFrameValue);
       setEnd(currentFrameValue);
     } else if (value == 2) {
@@ -157,7 +158,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         serverProxy.jobs
             .saveBulkDelete(jobInstance.id, payLoad)
             .then((result: any) => {
-                // window.location.reload();
+                window.location.reload();
                 return result;
             })
             .catch((error: any) => {

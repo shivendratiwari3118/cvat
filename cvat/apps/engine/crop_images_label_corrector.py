@@ -104,7 +104,7 @@ def label_generator_crop(image_folder, list_of_instance_trackedshape,list_of_ins
         cv2.imwrite(img_path_output, crop_img)
         cropped_img_paths.append(img_path_output)
 
-    print("ropppeeeeeeeeeeeeeeeeeeeeeeeeed", cropped_img_paths)
+    print("ropppeeeeeeeeeeeeeeeeeeeeeeeeeeeeed", cropped_img_paths)
     
     
     

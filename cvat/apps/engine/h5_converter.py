@@ -7,14 +7,21 @@ from PIL import Image, ImageFilter, ImageEnhance
 from multiprocessing import Pool
 import os
 import json
+from cvat.apps.engine.models import Task
 
-a = time.time()
+
 fn = ""
 print("-----------------------------------===========================================")
 print("Conversion STARTED")
 def converter_webm(filename): 
+    a = time.time()
+    dataid=int(filename.split("/")[5])
+    print("dataaaaaaa_iddddddd", dataid)
+    ids=Task.objects.values_list('project_id','id').get(data_id=dataid)
+
+
     final_dict={}
-    print("-----------------------------------===========================================")
+    print("-----------------------------------===========================================", filename)
     print("Conversion STARTED",filename)
     input_path = os.path.dirname(filename)
     # output_path = input_path.rstrip("/raw")
@@ -32,8 +39,6 @@ def converter_webm(filename):
 
         devicename=keys[0]
         channelname=keys[1].split("/")[1]
-
-        
 
         timestamp = keys[2:]
 
@@ -76,6 +81,16 @@ def converter_webm(filename):
             if not f.endswith(ends):
                 continue
             os.remove(os.path.join(output_path, f))
+        b=time.time()
+        print("bbbbbbbbbbbbbbaaaaaaaaaaaaaaaaa", b-a)
+
+        project_id=str(ids[0])
+        task_id=str(ids[1])
+
+        filepath="/home/django/data/time.txt"
+        file1 = open(filepath, "a") 
+        file1.write("PROJECT ID = " + project_id + ", TASK ID = " + task_id + ", TASK NAME = " + fn + ", TIME TAKEN = " + str(round((b-a)/60)) + " minutes \n")
+        file1.close()
 
 
         # excute_command(output_path,fn)
@@ -111,9 +126,6 @@ def iw(arr,obj):
        sharpened2.save(str(obj)+".jpeg")       
     # return True
 
-print(time.time()-a)
-
-print("imagessssssssssstime", time.time()-a)
 #os.system("ffmpeg -framerate 30 -pattern_type glob -t 100 -i '*.jpeg' -c:v libx264 -pix_fmt yuv420p out.mp4")
 #zipit = "zip -r out "+bigh5+" -i '*.jpeg'"
 #os.system(zipit)

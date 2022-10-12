@@ -220,6 +220,35 @@ class JobTrackSummary(viewsets.ViewSet):
             data = return_track_summary(pk)
         return Response(data)
 
+
+def nav_list(aa,stop_frame):
+    import math
+    try:
+        new_list = []
+        for item in aa:
+            if len(new_list) == 0:
+                if item[1] == True:
+                    pass
+                else:
+                    new_list.append(item)
+            else:
+                if new_list[-1][1] == item[1]:
+                    pass
+                else:
+                    new_list.append(item)
+        rnge_list = []
+        cnt = 0
+        for i in range(math.ceil(len(new_list)/2)):
+            try:
+                rnge_list.append(range(new_list[cnt][0],new_list[cnt+1][0]))
+                cnt += 2
+            except:
+                rnge_list.append(range(new_list[cnt][0],stop_frame))
+        return [item for sublist in rnge_list for item in sublist]
+    except:
+        return []
+
+
 def return_track_summary(pk):
     job = Job.objects.get(id=pk)
     return_list = []
@@ -259,8 +288,19 @@ def return_track_summary(pk):
         new_dict[item.id]['start_frame'] = min(new_dict[item.id]['frames'])
         new_dict[item.id]['end_frame'] = max(new_dict[item.id]['frames']) - remove_extra_step # - remove_extra_step added because to remove next step
         if new_dict[item.id]['end_frame'] > job.segment.stop_frame:new_dict[item.id]['end_frame'] = job.segment.stop_frame # added to hanlde last frame
+        if TrackedShape.objects.filter(track_id=item.id).values_list('frame','outside').order_by('frame').last()[1] == True:
+            new_dict[item.id]['end_frame'] = TrackedShape.objects.filter(track_id=item.id).values_list('frame','outside').order_by('frame').last()[0] - 1# added to hanlde last frame
+
         new_dict[item.id]['track_id'] = track_count
         new_dict[item.id]['item_id'] = item.id
+        track_lists = nav_list(item.trackedshape_set.values_list('frame','outside').order_by('frame'),job.segment.stop_frame)
+        new_dict[item.id]['track_frames'] = track_lists
+        ##new changes
+        new_dict[item.id]['end_frame']= track_lists[-1] if track_lists else 0
+        new_dict[item.id]['start_frame']= track_lists[0] if track_lists else 0
+        new_dict[item.id]['count']= len(track_lists)
+
+        # end 
 
         new_dict[item.id].pop('ids')
         new_dict[item.id].pop('frames')
@@ -289,12 +329,26 @@ class BlukDeleteFrames(viewsets.ViewSet):
     @action(detail=True, methods = ['GET', 'OPTIONS', 'POST','PUT'])
     def bulk_delete(self,request,pk):
         if request.method == "POST":
-            # points = eval(request.data.get("points"))  
             points = TrackedShape.objects.filter(track_id = request.data.get("track_id")).last().points
-            # if TrackedShape.objects.get_or_no
+            staart = request.data.get("frame")
             if request.data.get("frame") == "start":
                 request.data['frame'] = TrackedShape.objects.filter(track_id = request.data.get("track_id")).first().frame
+                TrackedShape.objects.filter(track_id = request.data.get("track_id"), frame__lt = request.data.get("next_frame")).delete()
             TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("frame")).delete() # added to hanlde to remove frames
-            TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("frame"), outside=True, type = "rectangle", points = points )
-            TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("next_frame"), outside=False, type = "rectangle", points = points )
+            # TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("frame"), outside=True, type = "rectangle", points = points )
+            if  staart != "start":
+                TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("frame"), outside=True, type = "rectangle", points = points )
+            new_next_frame = Job.objects.get(id=pk).segment.stop_frame + 1
+            if request.data.get("next_frame") != new_next_frame:
+                TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("next_frame"), outside=False, type = "rectangle", points = points )
+            else:
+                TrackedShape.objects.filter(track_id = request.data.get("track_id"), frame__gt = request.data.get("frame")).delete()
         return Response({"message":"true"})
+
+
+# class DeleteTrack(viewsets.ViewSet):
+#     @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
+#     def delete_tracks(self,request,pk):
+#         data = request.data # track_ids = '[1564,1565]'
+#         LabeledTrack.objects.filter(id__in=eval(data.get("track_ids"))).delete()
+#         return Response({"message":"true"})

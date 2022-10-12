@@ -202,6 +202,7 @@ class ObjectManager:
     def merge(self, objects, start_frame, overlap):
         # 1. Split objects on two parts: new and which can be intersected
         # with existing objects.
+        print("initobjectttttttttsssssss", objects)
         new_objects = [obj for obj in objects
             if obj["frame"] >= start_frame + overlap]
         int_objects = [obj for obj in objects

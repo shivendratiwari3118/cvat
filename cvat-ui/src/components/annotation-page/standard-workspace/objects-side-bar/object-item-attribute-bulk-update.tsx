@@ -73,7 +73,7 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
   };
 
   const currentFrameValue = localStorage.getItem('frameNumber')
-
+  
   React.useEffect(() => {
     
     if (value == 1) {
