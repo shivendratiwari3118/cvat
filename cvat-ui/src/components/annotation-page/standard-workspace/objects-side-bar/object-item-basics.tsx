@@ -142,7 +142,10 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         last: end,
     };
 
-    console.log(start, "start", frames_delete)
+    // console.log("jobInstance", jobInstance)
+    // const abc = `${jobInstance}`
+    // JSON.parse(txt)
+    // localStorage.setItem("jobInstance", JSON.stringify(jobInstance))
    
     window.localStorage.setItem('delete_frames', JSON.stringify(frames_delete));
 

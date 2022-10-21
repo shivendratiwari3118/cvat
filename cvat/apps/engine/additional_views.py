@@ -346,9 +346,9 @@ class BlukDeleteFrames(viewsets.ViewSet):
         return Response({"message":"true"})
 
 
-# class DeleteTrack(viewsets.ViewSet):
-#     @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
-#     def delete_tracks(self,request,pk):
-#         data = request.data # track_ids = '[1564,1565]'
-#         LabeledTrack.objects.filter(id__in=eval(data.get("track_ids"))).delete()
-#         return Response({"message":"true"})
+class DeleteTrack(viewsets.ViewSet):
+    @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
+    def delete_tracks(self,request,pk):
+        data = request.data # {"track_ids":"[1,2,3]"}
+        LabeledTrack.objects.filter(id__in=eval(data.get("track_ids"))).delete()
+        return Response({"message":"true"})

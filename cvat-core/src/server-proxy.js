@@ -590,6 +590,23 @@
                 }
             }
 
+            async function trackIdMerging(payload){
+                console.log("trackIdMerging", payload)
+                const { backendAPI } = config;
+
+                try {
+                    const response = await Axios.post(`${backendAPI}//tracks/all/delete_tracks`, JSON.stringify(payload), {
+                        proxy: config.proxy,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    return response.data;
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+            }
+
             async function getTasks(filter = {}) {
                 const { backendAPI } = config;
 
@@ -2057,6 +2074,7 @@
                             getProjectType:getProjectType,
                             getPopulate:populateSigns,
                             saveBulkupdate:saveBulkupdate,
+                            trackIdMerging:trackIdMerging,
                             getUpdate:getUpdate,
                             labelCorrectorImages:labelCorrectorImages,
                             getTrackIds:getTrackIds,

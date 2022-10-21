@@ -2322,7 +2322,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const {
             label, serverID, clientID, attributes, source, descriptions, points
         } = state;
-        console.log("state",state)
+        // console.log("state",state)
         const attrNames = label.attributes.reduce((acc: any, val: any): void => {
             acc[val.id] = val.name;
             return acc;

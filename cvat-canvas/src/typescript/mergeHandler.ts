@@ -4,6 +4,9 @@
 
 import * as SVG from 'svg.js';
 import { MergeData } from './canvasModel';
+import serverProxy from 'cvat-core/src/server-proxy';
+import { useSelector, useDispatch } from 'react-redux'
+import { saveAnnotationsAsync } from 'actions/annotation-actions';
 
 export interface MergeHandler {
     merge(mergeData: MergeData): void;
@@ -67,10 +70,13 @@ export class MergeHandlerImpl implements MergeHandler {
         if (this.initialized) {
             const { statesToBeMerged } = this;
             this.release();
-
+            console.log(" out side statesToBeMergedstatesToBeMerged", statesToBeMerged)
             if (statesToBeMerged.length > 1) {
+                console.log("statesToBeMergedstatesToBeMerged", statesToBeMerged)
+                // localStorage.setItem("statesToBeMerged", JSON.stringify(statesToBeMerged.map(item => item.serverID)))
                 this.onMergeDone(statesToBeMerged, Date.now() - this.startTimestamp);
             } else {
+                console.log("else statesToBeMerged", statesToBeMerged)
                 this.onMergeDone(null);
                 // here is a cycle
                 // onMergeDone => controller => model => view => closeMerging
@@ -94,15 +100,42 @@ export class MergeHandlerImpl implements MergeHandler {
         this.initialized = false;
     }
 
-    public merge(mergeData: MergeData): void {
+   async  merge(mergeData: MergeData): Promise<void> {
         if (mergeData.enabled) {
+            console.log("mergemerge", this.statesToBeMerged)
             this.initMerging();
         } else {
+        //     console.log("merge for closeMerging", this.statesToBeMerged)
+        //    await localStorage.setItem("statesToBeMerged", JSON.stringify(this.statesToBeMerged.map(item => item.serverID)))
+        const delTrackId:any = this.statesToBeMerged.map(item => item.serverID)
+        const payload:any = {
+            track_ids: JSON.stringify(delTrackId)
+        }
+        console.log("Payload", payload)       
+           
+            const apiResponse = await serverProxy.jobs
+            .trackIdMerging(payload)
+            .then((result: any) => {
+                console.log("api success")
+                // dispatch(saveAnnotationsAsync(data?.annotation?.job?.instance))
+                // let delId:any = [];
+                // localStorage.setItem("statesToBeMerged", JSON.stringify(delId))
+                // console.log("success", result)
+                // dispatch
+                // window.location.reload();
+                return result;
+            })
+            .catch((error: any) => {
+                console.log("error", error)
+                return error;
+            }) 
+            console.log("apiResponse", apiResponse)
             this.closeMerging();
         }
     }
 
     public select(objectState: any): void {
+        console.log("select objectState", objectState)
         const stateIndexes = this.statesToBeMerged.map((state): number => state.clientID);
         const stateFrames = this.statesToBeMerged.map((state): number => state.frame);
         const includes = stateIndexes.indexOf(objectState.clientID);
