@@ -26,6 +26,7 @@ interface OwnProps {
 }
 
 interface StateToProps {
+    highlightedShapes:any;
     jobInstance: any;
     frameNumber: any;
     statesHidden: boolean;
@@ -65,6 +66,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 zLayer: { min: minZLayer, max: maxZLayer },
             },
             job: { instance: jobInstance },
+            canvas: {instance :  highlightedShapes},
             player: {
                 frame: { number: frameNumber },
             },
@@ -105,6 +107,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         maxZLayer,
         keyMap,
         normalizedKeyMap,
+        highlightedShapes,
     };
 }
 
@@ -226,8 +229,18 @@ class ObjectsListContainer extends React.PureComponent<Props, State> {
     }
 
     private hideAllStates(hidden: boolean): void {
-        const { objectStates, updateAnnotations, readonly } = this.props;
-
+        // const { objectStates, updateAnnotations, readonly } = this.props;
+        const { updateAnnotations, readonly } = this.props;
+        let {objectStates} = this.props;
+        //  adding select and hide
+        const getSelcted = Object.keys(this.props.highlightedShapes.view.groupHandler.highlightedShapes);
+        if (getSelcted.length > 0){
+            function checkIdSelected(sid:any) {
+                return getSelcted.includes(sid.clientID.toString())
+              }
+            objectStates = objectStates.filter(checkIdSelected);  
+        }
+        //  end select and hide
         if (!readonly) {
             for (const objectState of objectStates) {
                 objectState.hidden = hidden;

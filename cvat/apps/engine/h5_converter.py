@@ -118,12 +118,14 @@ def iw(arr,obj):
 
        sharpened1 = im_output.filter(ImageFilter.SHARPEN);
        sharpened2 = sharpened1.filter(ImageFilter.SHARPEN);
-       sharpened2.save(str(obj)+".jpeg")  
+       sharpened3 = sharpened2.filter(ImageFilter.SHARPEN);
+       sharpened3.save(str(obj)+".jpeg")  
 
     else:
        sharpened1 = img.filter(ImageFilter.SHARPEN);
        sharpened2 = sharpened1.filter(ImageFilter.SHARPEN);
-       sharpened2.save(str(obj)+".jpeg")       
+       sharpened3 = sharpened2.filter(ImageFilter.SHARPEN);
+       sharpened3.save(str(obj)+".jpeg")       
     # return True
 
 #os.system("ffmpeg -framerate 30 -pattern_type glob -t 100 -i '*.jpeg' -c:v libx264 -pix_fmt yuv420p out.mp4")

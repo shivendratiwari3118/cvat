@@ -38,6 +38,9 @@ router.register('get-tracked-frame-summary',additional_views.JobTrackSummary,bas
 router.register('get-track-ids',additional_views.GetTrackIds ,basename='trackids')
 router.register('delete-frames',additional_views.BlukDeleteFrames ,basename='deleteframes')
 router.register('tracks',additional_views.DeleteTrack ,basename='deletetracks')
+router.register('copy',additional_views.CopyTrack ,basename='copytrack')
+
+
 
 # router.register('im',views.CatViewSet)
 

@@ -141,8 +141,10 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     switchOrientation={switchOrientation}
                     toBackground={toBackground}
                     toForeground={toForeground}
-                    resetCuboidPerspective={resetCuboidPerspective}
-                />
+                    resetCuboidPerspective={resetCuboidPerspective} 
+                    changeColorPickerVisible={function (visible: boolean): void {
+                        throw new Error('Function not implemented.');
+                    } } colorPickerVisible={false}                />
                 <ObjectButtonsContainer readonly={readonly} clientID={clientID} />
                 {!!attributes.length && (
                     <ItemDetails
@@ -154,7 +156,8 @@ function ObjectItemComponent(props: Props): JSX.Element {
                         attributes={attributes}
                         values={attrValues}
                         collapse={collapse}
-                        changeAttribute={changeAttribute}
+                        changeAttribute={changeAttribute} 
+                        serverID={serverID}   
                     />
                 )}
             </div>

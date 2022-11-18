@@ -590,6 +590,23 @@
                 }
             }
 
+            async function copyTrackAndPaste(payload){
+                console.log("copyTrackAndPaste", payload)
+                const { backendAPI } = config;
+
+                try {
+                    const response = await Axios.post(`${backendAPI}/copy/track/paste`, JSON.stringify(payload), {
+                        proxy: config.proxy,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    return response.data;
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+            }            
+
             async function trackIdMerging(payload){
                 console.log("trackIdMerging", payload)
                 const { backendAPI } = config;
@@ -2074,6 +2091,7 @@
                             getProjectType:getProjectType,
                             getPopulate:populateSigns,
                             saveBulkupdate:saveBulkupdate,
+                            copyTrackAndPaste:copyTrackAndPaste,
                             trackIdMerging:trackIdMerging,
                             getUpdate:getUpdate,
                             labelCorrectorImages:labelCorrectorImages,

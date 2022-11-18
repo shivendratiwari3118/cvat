@@ -71,7 +71,6 @@ function ItemAttributeComponent(props: Props): JSX.Element {
     const popOverHide = (a: boolean) =>{
         setRightClick(a)
     }
-    console.log("currentFrame", currentFrame)
 
     if (attrInputType === 'checkbox') {
         return (
@@ -104,7 +103,19 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                  />      
                     :          
                     <Popover
-                        content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                    content={
+                        <AttributeBulkUpdate 
+                        attrType="checkbox"
+                            currentFrame={currentFrame} 
+                            AnnotationId={AnnotationId} 
+                            jobInstance={jobInstance} 
+                            popOverHide={popOverHide} 
+                            trackId={clientID} 
+                            attrValue={attrValue} 
+                            attrName={attrName} 
+                            attrID={attrID}
+                        />
+                    }
                         placement="bottom"
                         title=""
                         trigger="click"
@@ -185,7 +196,19 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         />      
                         :          
                         <Popover
-                            content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                            content={
+                                <AttributeBulkUpdate 
+                                attrType="select"
+                                    currentFrame={currentFrame} 
+                                    AnnotationId={AnnotationId} 
+                                    jobInstance={jobInstance} 
+                                    popOverHide={popOverHide} 
+                                    trackId={clientID} 
+                                    attrValue={attrValue} 
+                                    attrName={attrName} 
+                                    attrID={attrID}
+                                />
+                            }
                             placement="bottom"
                             title=""
                             trigger="click"
@@ -235,7 +258,19 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         />      
                         :          
                         <Popover
-                            content={<AttributeBulkUpdate currentFrame={currentFrame} changeAttribute={changeAttribute} AnnotationId={AnnotationId} jobInstance={jobInstance} popOverHide={popOverHide} trackId={clientID} attrValue={attrValue} attrName={attrName} attrID={attrID}/>}
+                            content={
+                                <AttributeBulkUpdate 
+                                attrType="number"
+                                currentFrame={currentFrame} 
+                                AnnotationId={AnnotationId} 
+                                jobInstance={jobInstance} 
+                                popOverHide={popOverHide} 
+                                trackId={clientID} 
+                                attrValue={attrValue} 
+                                attrName={attrName} 
+                                attrID={attrID}
+                                />
+                            }
                             placement="bottom"
                             title=""
                             trigger="click"
@@ -269,7 +304,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
     return (
         <>
             <Col span={8} style={attrNameStyle}>
-                <Text className='cvat-text'>{attrName}</Text>
+                <Text className='cvat-text'  onClick={handleRightClickPop}
+                    onContextMenu={handleRightClick}>{attrName}</Text>
             </Col>
             <Col span={16} style={{display:"flex"}}>
                 <Input
@@ -288,9 +324,41 @@ function ItemAttributeComponent(props: Props): JSX.Element {
 
                         changeAttribute(attrID, event.target.value);
                     }}
+                    onClick={handleRightClickPop}
+                    onContextMenu={handleRightClick}
                     value={attrValue}
                     className='cvat-object-item-text-attribute'
-                /> {props.attrValues.includes("catalogue") ? <Signs attrid={props} clientID={clientID}/> : ""}
+                />
+                {AnnotationId === undefined ?  
+                     <Popover
+                     content={<NotSavedAnnotationModal currentFrame={currentFrame} changeAttribute={changeAttribute} jobInstance={jobInstance} popOverHide={popOverHide} flag={false} />}
+                     placement="bottom"
+                     title=""
+                     trigger="click"
+                     visible={rightClick}
+                 />      
+                    :          
+                    <Popover
+                        content={
+                            <AttributeBulkUpdate 
+                            attrType="text"
+                                currentFrame={currentFrame}
+                                AnnotationId={AnnotationId} 
+                                jobInstance={jobInstance} 
+                                popOverHide={popOverHide} 
+                                trackId={clientID} 
+                                attrValue={attrValue} 
+                                attrName={attrName} 
+                                attrID={attrID} 
+                            />
+                        }
+                        placement="bottom"
+                        title=""
+                        trigger="click"
+                        visible={rightClick}
+                    />     
+                }
+                 {props.attrValues.includes("catalogue") ? <Signs attrid={props} clientID={clientID}/> : ""}
             </Col>
         </>
     );

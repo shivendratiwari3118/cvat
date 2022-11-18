@@ -153,6 +153,7 @@ class AnnotationManager:
         shapes.merge(data.shapes, start_frame, overlap)
 
         tracks = TrackManager(self.data.tracks)
+        print("dataaaaaaaaaaaaaaaaaaaaaaaaaaaaa.tracks", data.tracks)
         tracks.merge(data.tracks, start_frame, overlap)
 
     def to_shapes(self, end_frame):
@@ -378,6 +379,7 @@ class TrackManager(ObjectManager):
         # Just for unification. All tracks are assigned on the same frame
         objects_by_frame = {0: []}
         for obj in objects:
+            print("objjjjjjjjjjjjjjjjjjjjjjjjjj", obj)
             shape = obj["shapes"][-1] # optimization for old tracks
             if shape["frame"] >= start_frame or not shape["outside"]:
                 objects_by_frame[0].append(obj)

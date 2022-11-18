@@ -556,7 +556,8 @@ export function editShape(enabled: boolean): AnyAction {
 export function copyShape(objectState: any): AnyAction {
     const job = getStore().getState().annotation.job.instance;
     job.logger.log(LogType.copyObject, { count: 1 });
-
+    localStorage.setItem("copyShapeId",objectState.serverID)
+    localStorage.setItem("copyFlag", false)
     return {
         type: AnnotationActionTypes.COPY_SHAPE,
         payload: {
@@ -1469,6 +1470,7 @@ export function pasteShapeAsync(): ThunkAction {
                 });
                 dispatch(createAnnotationsAsync(jobInstance, frameNumber, [objectState]));
             } else {
+                localStorage.setItem("copyFlag", true)
                 canvasInstance.draw({
                     enabled: true,
                     initialState,

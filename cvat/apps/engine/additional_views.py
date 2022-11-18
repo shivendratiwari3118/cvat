@@ -57,6 +57,7 @@ class GetCroppedImages(viewsets.ViewSet):
 
 
         data = label_generator_crop(image_folder, list_of_instance_trackedshape, list_of_instance_labeledtrack, last_frame)
+        print("label_generator&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
 
         # data = "hello"
         return Response(data)
@@ -86,17 +87,26 @@ class BulkUpdate(viewsets.ModelViewSet):
     @action(detail=True, methods=['OPTIONS', 'POST','PUT'], url_path=r'data')
     def data(self, request,pk):
 
-        att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
-        ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
-        tshape = ltt.trackedshape_set.first() # FIXME i ah
-        if request.data.get('start_frame') == "start":
-            request.data['start_frame'] = tshape.frame
-            TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
-        t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
-        t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
-        t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
-        t_end_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
-        return Response({"message":True})
+        attribute_name = request.data.get('attribute_id')
+        if attribute_name == "SR_MAIN_ID":
+            att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
+            ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
+            tshape = ltt.trackedshape_set.first()
+            tshape.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+            return Response({"message":True})
+        else:
+
+            att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
+            ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
+            tshape = ltt.trackedshape_set.first() # FIXME i ah
+            if request.data.get('start_frame') == "start":
+                request.data['start_frame'] = tshape.frame
+                TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
+            t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
+            t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
+            t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+            t_end_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+            return Response({"message":True})
 
 class LabelCorrectorAttrSave(viewsets.ModelViewSet):
     # queryset = AdditionalProjectInfo.objects.filter()
@@ -343,6 +353,7 @@ class BlukDeleteFrames(viewsets.ViewSet):
                 TrackedShape.objects.create(track_id = request.data.get("track_id"), frame = request.data.get("next_frame"), outside=False, type = "rectangle", points = points )
             else:
                 TrackedShape.objects.filter(track_id = request.data.get("track_id"), frame__gt = request.data.get("frame")).delete()
+        LabeledTrack.objects.exclude(id__in=TrackedShape.objects.values_list('track_id',flat=True)).delete()
         return Response({"message":"true"})
 
 
@@ -351,4 +362,18 @@ class DeleteTrack(viewsets.ViewSet):
     def delete_tracks(self,request,pk):
         data = request.data # {"track_ids":"[1,2,3]"}
         LabeledTrack.objects.filter(id__in=eval(data.get("track_ids"))).delete()
+        return Response({"message":"true"})
+
+class CopyTrack(viewsets.ViewSet):
+
+    @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
+    def paste(self,request,pk):
+        ctrack = request.data.get("copied_track")
+        new_track = request.data.get("new_track")
+        tt = LabeledTrack.objects.get(id=new_track)
+        #tt.trackedshape_set.create(frame=tt.trackedshape_set.last().frame+1,points= tt.trackedshape_set.last().points,outside=True)
+        TrackedShape.objects.filter(track_id=new_track).update(track_id=ctrack)
+        LabeledTrack.objects.filter(id=new_track).delete()
+        new_track = new_track - 1
+        LabeledTrack.objects.filter(id=new_track).delete()
         return Response({"message":"true"})

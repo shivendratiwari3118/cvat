@@ -14,6 +14,7 @@ interface Props {
     collapsed: boolean;
     clientID: number;
     attributes: any[];
+    serverID: number | undefined;
     AnnotationId: number | undefined;
     jobInstance: any;
     values: Record<number, string>;
@@ -42,7 +43,7 @@ function attrAreTheSame(prevProps: Props, nextProps: Props): boolean {
 
 function ItemAttributesComponent(props: Props): JSX.Element {
     const {
-        AnnotationId, jobInstance, collapsed, attributes, values, readonly, changeAttribute, collapse,clientID,
+        AnnotationId, jobInstance, serverID, collapsed, attributes, values, readonly, changeAttribute, collapse,clientID,
     } = props;
     const popOverHide = () =>{
         console.log("")
@@ -53,7 +54,7 @@ function ItemAttributesComponent(props: Props): JSX.Element {
             {/* <div style={{marginTop: '-23px', marginLeft:'6px'}}>
             <DeleteOutlined />
             </div> */}
-            <Corrector AnnotationId={AnnotationId} attributes={attributes} jobInstance={jobInstance} popOverHide={popOverHide}/>
+            <Corrector serverID={serverID} AnnotationId={AnnotationId} attributes={attributes} jobInstance={jobInstance} popOverHide={popOverHide}/>
             <Collapse
                 className='cvat-objects-sidebar-state-item-collapse'
                 activeKey={collapsed ? [] : ['details']}
@@ -78,8 +79,7 @@ function ItemAttributesComponent(props: Props): JSX.Element {
                                     attrName={attribute.name}
                                     attrID={attribute.id}
                                     attrValues={attribute.values}
-                                    changeAttribute={changeAttribute}
-                                />
+                                    changeAttribute={changeAttribute}                           />
                             </Row>
                         ),
                     )}

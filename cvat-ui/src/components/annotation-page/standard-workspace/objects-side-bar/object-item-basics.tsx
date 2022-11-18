@@ -4,13 +4,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Radio } from 'antd';
+import { Row, Col } from 'antd/lib/grid';
 import Button from 'antd/lib/button';
+import Menu from 'antd/lib/menu';
 import InputNumber from 'antd/lib/input-number';
 import type { RadioChangeEvent } from 'antd';
-import Menu from 'antd/lib/menu';
 import Modal from 'antd/lib/modal';
 import { MoreOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Row, Col} from 'antd/lib/grid';
 import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
 import serverProxy from 'cvat-core/src/server-proxy';
@@ -18,6 +18,8 @@ import { ObjectType, ShapeType, ColorBy } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import LabelSelector from 'components/label-selector/label-selector';
 import ItemMenu from './object-item-menu';
+import { useDispatch, useSelector } from 'react-redux';
+import { removeAnnotationsAsync, removeObjectAsync, saveAnnotationsAsync } from 'actions/annotation-actions';
 
 interface Props {
     jobInstance: any;
@@ -50,16 +52,11 @@ interface Props {
     toForeground(): void;
     resetCuboidPerspective(): void;
 }
-
-interface abcd {
-    changeColorPickerVisible(visible: boolean): void;
-    colorPickerVisible: boolean;
+interface ItemProps {
+    toolProps: Props;
 }
 
-type Pprops = Props & abcd;
-// const mainProps = Props && abcd
-
-function ItemTopComponent(props: Pprops): JSX.Element {
+function ItemTopComponent(props: Props): JSX.Element {
     const {
         readonly,
         clientID,
@@ -92,68 +89,57 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         jobInstance,
     } = props;
 
+    const dispatch = useDispatch()
+
+    const abcData = useSelector((state) => state);
     const [menuVisible, setMenuVisible] = useState(false);
     const [colorPickerVisible, setColorPickerVisible] = useState(false);
-    const [option, setOption] = useState<string>('current-frame');
-    const [startFrame, setStartFrame] = useState<number>(0);
-    const [endFrame, setEndFrame] = useState<number>(0);
-    // const { toolProps, ...rest } = props;
-    // const { removeShortcut, locked, remove, serverID } = toolProps;
-
-    const [start, setStart] = useState<any>();
+    const [start, setStart] = useState<any>(null);
     const [end, setEnd] = useState<any>(null);
     const [value, setValue] = useState(1);
+    const [cflag, setCFlag] = useState(false)
+    const copyId = localStorage.getItem("copyShapeId")
+    const copyFlag: any = localStorage.getItem("copyFlag")
     const currentFrameValue = localStorage.getItem('frameNumber')
+
 
     const onRadioChange = (e: RadioChangeEvent) => {
         setValue(e.target.value);
-        if(e.target.value === 5){
-          setStart(null);
-          setEnd(null);
+        if (e.target.value === 5) {
+            setStart(null);
+            setEnd(null);
         }
-      };
+    };
 
+    React.useEffect(() => {
+        if (value == 1) {
+            setStart(currentFrameValue);
+            setEnd(currentFrameValue);
+        } else if (value == 2) {
+            setStart(currentFrameValue);
+            setEnd(jobInstance.stopFrame);
+        } else if (value == 3) {
+            console.log("value", value)
+          /*  setStart(jobInstance.startFrame); */
+            setStart("start");
+            setEnd(currentFrameValue);
+        }
+        else if (value == 4) {
+            setStart(jobInstance.startFrame);
+            setEnd(jobInstance.stopFrame);
+        }
+    }, [value]);
 
-  React.useEffect(() => {    
-    if (value == 1) {
-        console.log("currentFrameValue", currentFrameValue)
-      setStart(currentFrameValue);
-      setEnd(currentFrameValue);
-    } else if (value == 2) {
-      setStart(currentFrameValue);
-      setEnd(jobInstance.stopFrame);
-    } else if (value == 3) {
-    //   setStart(jobInstance.startFrame);
-    console.log("value 3")
-    const sFrame = 'start'
-      setStart(sFrame);
-      setEnd(currentFrameValue);
-    }
-    else if (value == 4) {
-        // setStart(jobInstance.startFrame);
-        setStart("start");
-        setEnd(jobInstance.stopFrame);
-      }
-      
-  }, [value]);   
-
-    const frames_delete = {        
+    const frames_delete = {
         first: start,
         last: end,
     };
-
-    // console.log("jobInstance", jobInstance)
-    // const abc = `${jobInstance}`
-    // JSON.parse(txt)
-    // localStorage.setItem("jobInstance", JSON.stringify(jobInstance))
-   
     window.localStorage.setItem('delete_frames', JSON.stringify(frames_delete));
 
-    const handleRemoveAnnotation = (): void => {        
+    const handleRemoveAnnotation = (): void => {
         const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
-        console.log("delete_frames", delete_frames)
-        const payLoad: payLoadProps = {
-            frame: delete_frames.first == 'start' ? "start" : parseInt(delete_frames.first),
+        const payLoad: any = {
+            frame: (delete_frames.first),
             next_frame: parseInt(delete_frames.last) + 1,
             track_id: serverID,
         };
@@ -169,6 +155,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
             });
     };
 
+
     const changeMenuVisible = (visible: boolean): void => {
         if (!visible && colorPickerVisible) return;
         setMenuVisible(visible);
@@ -181,67 +168,91 @@ function ItemTopComponent(props: Pprops): JSX.Element {
         setColorPickerVisible(visible);
     };
 
-    const [currentId,setCurrentId] = useState(0);
+    const [currentId, setCurrentId] = useState(0);
 
-    async function updateAgain(){
+    async function updateAgain() {
         serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
-        .then((data) => {
-                let currObj = data.track_ids.filter((item:any) => {
+            .then((data) => {
+                let currObj = data.track_ids.filter((item: any) => {
                     let ko = Object.keys(item);
-                    if(Number(ko[0]) === serverID){
+                    if (Number(ko[0]) === serverID) {
                         return item;
                     }
                 })
-                if(currObj.length < 1){
-                    if(data.track_ids.length < 1){
+                if (currObj.length < 1) {
+                    if (data.track_ids.length < 1) {
                         setCurrentId(0);
-                    }else{
+                    } else {
                         let obj = data.track_ids[data.track_ids.length - 1];
                         let vals = Object.values(obj);
                         let val = Number(vals[0]) + 1;
                         setCurrentId(val);
                     }
-                }else{
-                    let values = Object.values(currObj[0]);
-                    setCurrentId(values[0]);     
-                }
-        })  
-        .catch(err => console.log(err));
-    }
-
-    async function updatetrackId(){
-        serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
-            .then((data) => {
-                let currObj = data.track_ids.filter((item:any) => {
-                    let ko = Object.keys(item);
-                    if(Number(ko[0]) === serverID){
-                        return item;
-                    }
-                })
-                if(currObj.length < 1){
-                    updateAgain();
-                }else{
+                } else {
                     let values = Object.values(currObj[0]);
                     setCurrentId(values[0]);
                 }
-            })  
+            })
             .catch(err => console.log(err));
     }
 
-    useEffect(()=>{
-        updatetrackId();
-    },[]);
+    async function updatetrackId() {
+        serverProxy.jobs.getSrMainAndTrackId(jobInstance.id)
+            .then((data) => {
+                let currObj = data.track_ids.filter((item: any) => {
+                    let ko = Object.keys(item);
+                    if (Number(ko[0]) === serverID) {
+                        return item;
+                    }
+                })
+                if (currObj.length < 1) {
+                    updateAgain();
+                } else {
+                    let values = Object.values(currObj[0]);
+                    setCurrentId(values[0]);
+                }
+            })
+            .catch(err => console.log(err));
+    }
 
-    
-    enum MenuKeys {        
+    useEffect(() => {
+        updatetrackId();
+    }, []);
+
+    enum MenuKeys {
         REMOVE_ITEM = 'remove_item',
     }
-    
+
+    const sId = abcData?.annotation?.annotations?.states[0]?.serverID
+    useEffect(() => {
+        (async () => {
+            let i = 0
+            if (copyFlag == "true") {
+                if (sId == undefined) {
+                    await dispatch(saveAnnotationsAsync(jobInstance))
+                }
+                const payload = {
+                    "copied_track": copyId,
+                    "new_track": sId
+                }
+
+                if (copyId !== sId && sId !== undefined) {
+                    await serverProxy.jobs.copyTrackAndPaste(payload).then((res) => {
+                        localStorage.setItem("copyFlag", false)
+                        window.location.reload();
+                    })
+                }
+                else {
+                    setCFlag(true)
+                }
+            }
+        })();
+    }, [copyFlag, cflag])
     return (
         <Row align='middle'>
             <Col span={10}>
-            <Text style={{ fontSize: 12 }}>{`${serverID}`}</Text>
-            {/* <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text> */}
+                {/* <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text> */}
+                <Text style={{ fontSize: 12 }}>{`${serverID}`}</Text>
                 <br />
                 <Text
                     type='secondary'
@@ -261,6 +272,7 @@ function ItemTopComponent(props: Pprops): JSX.Element {
                         onChange={changeLabel}
                         className='cvat-objects-sidebar-state-item-label-selector'
                     />
+
                 </CVATTooltip>
             </Col>
             <Col span={2}>
@@ -300,60 +312,64 @@ function ItemTopComponent(props: Pprops): JSX.Element {
                     <MoreOutlined />
                 </Dropdown>
             </Col>
-            <div style={{marginBottom:"-86px", marginLeft: '-10px'}}>                
-            <Button style={{color: 'black'}} key={MenuKeys.REMOVE_ITEM} type='link' onClick={(): void => {
-                        Modal.info({
-                            className: 'cvat-modal-confirm',
-                            title: 'Delete Annotation',
-                            onOk() {
-                                if (locked) {
-                                    Modal.confirm({
-                                        className: 'cvat-modal-confirm',
-                                        title: 'Object is locked',
-                                        content: 'Are you sure you want to remove it?',
-                                        onOk() {
-                                            remove();
-                                        },
-                                    });
-                                } else {
-                                    handleRemoveAnnotation();
-                                }
-                            },
-                            content: (
-                                <>
-                                    <Row align='middle' justify='space-between'>
-                                        <div className='delete-head'>
-                                            <p>Single ROI for deletion</p>
-                                        </div>
-                                        <Radio.Group className='radio-container' onChange={onRadioChange}>
-                                            <Radio value={1}>Current Frame</Radio>
-                                            <Radio value={2}>
-                                                Current Frame to End Frame
-                                            </Radio>
-                                            <Radio value={3}>
+            <div style={{marginBottom:"-86px", marginLeft: '-10px'}}>  
+            <Button key={MenuKeys.REMOVE_ITEM} type='link' onClick={(): void => {
+                Modal.info({
+                    className: 'cvat-modal-confirm',
+                    title: 'Delete Annotation',
+                    onOk() {
+                        if (locked) {
+                            Modal.confirm({
+                                className: 'cvat-modal-confirm',
+                                title: 'Object is locked',
+                                content: 'Are you sure you want to remove it?',
+                                onOk() {
+                                    remove();
+                                },
+                            });
+                        } else {
+                            handleRemoveAnnotation();
+                        }
+                    },
+                    content: (
+                        <>
+                            <Row align='middle' justify='space-between'>
+                                <div className='delete-head'>
+                                    <p>Single ROI for deletion</p>
+                                </div>
+                                <Radio.Group className='radio-container' onChange={onRadioChange}>
+                                    <Radio value={1}>Current Frame</Radio>
+                                    <Radio value={2}>
+                                        Current Frame to End Frame
+                                    </Radio>
+                                     <Radio value={3}>
                                                 Start Frame to Current Frame
-                                            </Radio>
-                                            <Radio value={4}>Start Frame to End Frame</Radio>
-                                            <Radio value={5}>
-                                                Enter Start Frame &nbsp;
-                                                <InputNumber  min={1} onChange={(value:number) => setStart(value)} />
-                                                
-                                                to End &nbsp;Frame &nbsp;
-                                                <InputNumber    min={start} onChange={(value: number) => setEnd(value)} />
-                                               
-                                            </Radio>
-                                        </Radio.Group>
-                                    </Row>
+                                    </Radio>
+                                    <Radio value={4}>Start Frame to End Frame</Radio>
+                                    <Radio value={5}>
+                                        Enter Start Frame &nbsp;
+                                        <InputNumber disabled={value == 5} min={1} onChange={(value: number) => setStart(value)} />
 
-                                </>
-                            ),
-                        });
-                    }} >
-            <DeleteOutlined />
+                                        to End &nbsp;Frame &nbsp;
+                                        <InputNumber disabled={value == 5} min={start} onChange={(value: number) => setEnd(value)} />
+
+                                    </Radio>
+                                </Radio.Group>
+                            </Row>
+
+                        </>
+                    ),
+                });
+            }} >
+                <DeleteOutlined />
             </Button>
             </div>
+
+            {/* {!readonly && <RemoveItem key={MenuKeys.REMOVE_ITEM} toolProps={props} />} */}
+
         </Row>
     );
+
 }
 
 export default React.memo(ItemTopComponent);

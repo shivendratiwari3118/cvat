@@ -1,25 +1,15 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Button, Divider, Modal, Typography, Radio } from 'antd';
-import {connect, useDispatch, useSelector } from 'react-redux';
+import { Input } from 'antd';
+import { useDispatch } from 'react-redux';
 import InputNumber from 'antd/lib/input-number';
 import { Checkbox } from 'antd';
 import { Col, Row } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { RadioChangeEvent } from 'antd';
-import { fetchAnnotationsAsync, saveAnnotationsAsync } from 'actions/annotation-actions';
-import { CombinedState } from 'reducers/interfaces';
-import {
-  activateObject as activateObjectAction,
-  changeFrameAsync,
-  updateAnnotationsAsync,
-} from 'actions/annotation-actions';
-import { ThunkDispatch } from 'utils/redux';
 import serverProxy from 'cvat-core/src/server-proxy';
-import { getOrganizationsAsync } from 'actions/organization-actions';
-import { RouteComponentProps } from 'react-router';
-
 interface Props {
+  attrType: string | boolean | number;
   attrID: number;
   attrName: string;
   trackId: number;
@@ -27,27 +17,19 @@ interface Props {
   jobInstance: any;
   AnnotationId: number | undefined
   attrValue: any;
-  getAnnotationsApi:(a:any, b:any) => void
-  setReloadRequire(a:boolean):void;
   currentFrame: number;
-  changeAttribute(attrID: number, value: string): void;
 }
 interface payLoadProps {
   start_frame: any;
   end_frame: any;
-  job_id: any;
-  AnnotationId: number| undefined;
-  attribute_id: number,
- // old_annotation_id: number| undefined
-  attribute_name: string;
   attribute_val: any;
-  attribute_previous_val:any
+  attribute_previous_val: any
 }
 
-const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
+const AttributeBulkUpdate = (props: Props) => {
 
   const dispatch = useDispatch();
-  const {attrID,currentFrame,changeAttribute, AnnotationId, attrValue, attrName, trackId, jobInstance,setReloadRequire, getAnnotationsApi, history:push } = props;
+  const { attrID, attrType, AnnotationId, attrValue, attrName, trackId, jobInstance } = props;
   const { Title } = Typography;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [value, setValue] = useState(1);
@@ -55,8 +37,8 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
   const [start, setStart] = useState<any>(null);
   const [end, setEnd] = useState<any>(null);
   const [jobId, setJobId] = useState(0);
-  const [err,setErr] = useState(false);
-  const [flag, setFlag] = useState(false)
+  const [err, setErr] = useState(false);
+  const [srMainIdValue, setSrMainIdValue] = useState(attrValue)
 
   React.useEffect(() => {
     let path = window.location.pathname;
@@ -66,24 +48,24 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
 
   const onRadioChange = (e: RadioChangeEvent) => {
     setValue(e.target.value);
-    if(e.target.value === 4){
+    if (e.target.value === 4) {
       setStart(null);
       setEnd(null);
     }
   };
 
   const currentFrameValue = localStorage.getItem('frameNumber')
-  
+
   React.useEffect(() => {
-    
     if (value == 1) {
       setStart(currentFrameValue);
       setEnd(jobInstance.stopFrame);
     } else if (value == 2) {
-      setStart("start");
+      setStart(jobInstance.startFrame);
+      // setStart("start")
       setEnd(currentFrameValue);
     } else if (value == 3) {
-      setStart("start");
+      setStart(jobInstance.startFrame);
       setEnd(jobInstance.stopFrame);
     }
   }, [value]);
@@ -92,16 +74,16 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
     setChkValue(e.target.checked);
   };
 
-  const showModal = async () => {   
+  const showModal = async () => {
     setIsModalVisible(true);
     props.popOverHide(false);
   };
- 
- 
+
+
 
   const payLoadPostAPI = async (payload: payLoadProps) => {
     return serverProxy.jobs
-    .saveBulkupdate(payload)
+      .saveBulkupdate(payload)
       .then((result: any) => {
         return result;
       })
@@ -111,7 +93,7 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
   }
 
   const bulkUpdateAttributes = async () => {
-    if(start !== null && end !== null){
+    if (start !== null && end !== null) {
       try {
         const payLoad: payLoadProps = {
           start_frame: start,
@@ -121,22 +103,22 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
           attribute_id: attrID,
           attribute_name: attrName,
           attribute_previous_val: attrValue.toString().toLocaleLowerCase(),
-          attribute_val: chkValue.toString().toLocaleLowerCase()
+          attribute_val: attrType == 'text' ? srMainIdValue : chkValue.toString().toLocaleLowerCase()
         };
-  
+        console.log("payLoad", payLoad)
         const apiResponse = await payLoadPostAPI(payLoad);
-        if(apiResponse.message == true){
-          window.location.reload()
+        if (apiResponse.message == true) {
+          // window.location.reload()
         }
         setIsModalVisible(false);
       } catch (err) {
-        console.log("error",err);
+        console.log("error", err);
       }
-    }else{
+    } else {
       setErr(true);
-      setTimeout(()=>{
+      setTimeout(() => {
         setErr(false);
-      },3000);
+      }, 3000);
     }
   };
 
@@ -153,7 +135,7 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
             <Title level={5} style={{ display: 'block', textAlign: 'center' }}> Track Id: {trackId}</Title>
             <Divider />
             <Radio.Group onChange={onRadioChange} value={value} style={{ borderLeft: '1px solid grey', borderTop: '1px solid grey', padding: '10px' }}>
-              
+
               <Row>
                 <Col span={24}> <Radio value={1}><Title level={5}>Current Frame to End Frame</Title></Radio></Col>
               </Row>
@@ -164,18 +146,18 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
                 <Col span={24}> <Radio value={3}><Title level={5}>Start Frame to End Frame</Title></Radio></Col>
               </Row>
               <Row>
-                <Col span={24}> 
+                <Col span={24}>
                   <Row>
                     <Col span={1}><Radio value={4} /></Col>
-                    <Col span={8}> <Title style={{marginLeft:'5px'}} level={5}>Enter Start Frame</Title></Col>
-                    <Col span={3}><InputNumber disabled={value !==4}  min={1} onChange={(value:number) => setStart(value)} /></Col>
-                    <Col span={8}><Title style={{marginLeft:'39px'}}  level={5}>to End Frame</Title></Col>
-                    <Col span={3}><InputNumber disabled={value !==4}   min={start} onChange={(value: number) => setEnd(value)} /></Col>
+                    <Col span={8}> <Title style={{ marginLeft: '5px' }} level={5}>Enter Start Frame</Title></Col>
+                    <Col span={3}><InputNumber disabled={value !== 4} min={1} onChange={(value: number) => setStart(value)} /></Col>
+                    <Col span={8}><Title style={{ marginLeft: '39px' }} level={5}>to End Frame</Title></Col>
+                    <Col span={3}><InputNumber disabled={value !== 4} min={start} onChange={(value: number) => setEnd(value)} /></Col>
                   </Row>
-                </Col>  
+                </Col>
               </Row>
             </Radio.Group>
-            {err ? <Title level={5} style={{color:'red'}}>Please select start & end frame,before proceeding!</Title> : ''}
+            {err ? <Title level={5} style={{ color: 'red' }}>Please select start & end frame,before proceeding!</Title> : ''}
             <Divider />
             <div style={{ display: 'flex', marginTop: '20px', alignItems: 'flex-start' }}>
               <table style={{ border: '1px solid grey' }}>
@@ -185,11 +167,14 @@ const AttributeBulkUpdate = (props: Props & RouteComponentProps) => {
                 </tr>
                 <tr style={{ border: '1px solid grey' }}>
                   <td style={{ border: '1px solid grey', padding: '10px' }}><Title style={{ marginRight: '20px' }} level={5} >{attrName}</Title></td>
-                  <td style={{ border: '1px solid grey', padding: '10px' }}> <Checkbox onChange={onChange} /></td>
+                  {attrType !== "text" ?
+                    <td style={{ border: '1px solid grey', padding: '10px' }}> <Checkbox onChange={onChange} /></td>
+                    :
+                    <td style={{ border: '1px solid grey', padding: '10px' }}> <Input value={srMainIdValue} onChange={(e:any) => setSrMainIdValue(e.target.value)} /> </td>
+                  }
                 </tr>
-              </table>              
+              </table>
             </div>
-
           </Modal>
         </>
       }

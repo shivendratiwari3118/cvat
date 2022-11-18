@@ -1,0 +1,16 @@
+h1, p {
+    font-family: Lato;
+  }
+  
+  .can {
+    margin: 30px;
+  }
+  
+  canvas {
+    width: 200px;
+    /* height: 100px; */
+    /* background-color: red; */
+    /* background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhMnre_U2cEGTqAfQB3Bbg60oe1tuYI-9Ieoz4934U&s"); */
+    border: 1px solid #ccc;    
+    border-radius: 4px;
+  }

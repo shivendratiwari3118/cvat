@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Modal, Col, Row, Divider, Input, Popover, Button } from 'antd';
+import { Spin } from 'antd';
 import { DotChartOutlined } from "@ant-design/icons";
+import { Image } from 'antd';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import {  Typography, Radio } from 'antd';
 import {  useDispatch } from 'react-redux';
-import { saveAnnotationsAsync } from 'actions/annotation-actions';
+import { saveAnnotationsAsync, zoomCanvas } from 'actions/annotation-actions';
 import { useSelector } from "react-redux";
 import serverProxy from "cvat-core/src/server-proxy";
 import './context_menu.css';
 import NotSavedAnnotationModal from '../object-item-not-saved-annotations';
+import CorrectorCanvas from './corrector_canvas';
+import { DraggableEvent, DraggableData } from 'react-draggable';
 
 
 const style: React.CSSProperties = { padding: '8px 0', height: '200px', width: '200px' };
@@ -17,6 +22,7 @@ interface Props {
     AnnotationId: number |  undefined
     attributes: any[];
     jobInstance:any;
+    serverID: number | undefined;
     popOverHide: (a: boolean) => void;
 
 }
@@ -27,8 +33,8 @@ const { Title } = Typography;
 
 const Corrector = (props:Props) => {
     //const [visible, setVisible] = useState(false);
-    
-    const {attributes, AnnotationId, jobInstance} = props
+    const [visibleImage, setVisibleImage] = useState(false)
+    const {attributes, AnnotationId, jobInstance, serverID} = props
     const dispatch = useDispatch();
     const [cssclass, setCssclass] = useState("");
     const [assignSRdata, setAssignSRdata] = useState([]);
@@ -41,7 +47,14 @@ const Corrector = (props:Props) => {
     const [id, setId] = useState()
     const [jobId, setJobId] = useState(0);
     const [flagValue, setFlagValue] = useState(false)
-   
+    const [loading, setLoading] = useState(true)
+
+
+    // const canvasRef = useRef()
+
+    const abc = localStorage.getItem("serverId")
+        console.log("localStorage abc", abc)
+
     React.useEffect(() => {
       let path = window.location.pathname;
       let pathArr = path.split("/");
@@ -56,15 +69,19 @@ const Corrector = (props:Props) => {
       setVisible(newVisible);
     };
 
-    const callSave = () => {
-        if(AnnotationId == undefined){
+    const callSave = (e:any) => {
+        e.preventDefault();
+        console.log(serverID, "dot ", AnnotationId)
+        if(serverID == undefined){
             setFlagValue(true)
         }
         else{
         setVisible(true);
         // need to see
         // 64 is job id, 12 is task_id is annotation id 
-        serverProxy.jobs.labelCorrectorImages(jobId, AnnotationId).then((res) => {
+        serverProxy.jobs.labelCorrectorImages(jobId, serverID).then((res) => {
+            console.log("response", res)
+            setLoading(false)
             setCropedImages(res);
         });
         getAssignSRdata();
@@ -93,18 +110,9 @@ const Corrector = (props:Props) => {
     }
 
     const handleRightClickPop = () =>{
+        dispatch(zoomCanvas(true));
         setRightClick(false)
-    }
-
-    const updateCss = (e:any,frame:any) => {
-        alert("bingo")
-        console.log(frame)
-        if (cssclass == "") {
-            setCssclass('container_menu')
-        } else {
-            setCssclass('')
-        }
-    }
+    }  
 
     const getAssignSRdata = () => {
         const { annotation: {
@@ -149,8 +157,6 @@ const Corrector = (props:Props) => {
     const handleButtonClick = async(value:any, id:any) => {
         const attributesFilterData = attributes.filter((item:any) => assignSRdata.includes(item.name))
         const finalFilterData = attributesFilterData.filter(item => item.name == value)
-        // const cc = aaa.includes(value);
-         console.log("finalFilterData", finalFilterData)
         if(value == 'SR_PARTLY'){       
             setFlag(true)   
             setFrameId([...frameId, id])  
@@ -167,7 +173,6 @@ const Corrector = (props:Props) => {
                 }           
           
                 const apiResponse = await srLabelPostApi(payload);
-                console.log('apiResponse', apiResponse)
               } catch (err) {
                 console.log(err);
               }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
@@ -186,7 +191,6 @@ const Corrector = (props:Props) => {
                 }           
           
                 const apiResponse = await srInvisiblePostAPI(payload);
-                console.log('apiResponse', apiResponse)
               } catch (err) {
                 console.log(err);
             }  
@@ -194,23 +198,30 @@ const Corrector = (props:Props) => {
     }
     const AssignNode = ({data,frame}) => {
         return data.map((item: any) => {
-            return (
-                // <MenuItem key={item} onClick={(e)=>{updateCss(e,frame) ,alert("clicked me")} }>
-                    // <FaEllipsisV className="openwith"/>
-                    // <span id = {frame}>{item}</span>
-                    <div>
-                        <Button onClick={() =>handleButtonClick(item, frame)} style={{marginBottom:'10px'}} type='text' id={frame}>{item}</Button>
-                    </div>
-                    // {/* <span onClick={updateCss}>Partly visible</span> */}
-                // </MenuItem>
+            return (               
+                <div>
+                    <Button onClick={() =>handleButtonClick(item, frame)} style={{marginBottom:'10px'}} type='text' id={frame}>{item}</Button>
+                </div>
+                
             )
         })
     }
 
-    const CropedImagesNode = (data: any) => {
-        return data.data.map(item => {
+    const [imageId, setImageId] = useState()
+
+    const handleImageClick = (id) =>{
+        // const attributesFilterData = attributes.filter((item:any) => assignSRdata.includes(item.name))
+        // const finalFilterData = attributesFilterData.filter(item => item.name == id)
+        // console.log(attributes,"handleImageClick",attributesFilterData, finalFilterData)
+        // if()
+        setVisibleImage(true)
+    }
+
+    const CropedImagesNode = (data: any) => {   
+        return data.data.map((item:any) => {
+            console.log("item", item)
             return (
-                <Col span={6} key={item.frame}>
+                <Col  span={6} key={item.frame} >
                    
                     <Popover
                         content={<AssignNode data={assignSRdata} frame={item.frame}/>}
@@ -219,20 +230,29 @@ const Corrector = (props:Props) => {
                         trigger="click"
                         visible={rightClick && id == item.frame}
                         >
-                            <div 
-                                className={flag && frameId.includes(item.frame) ? 'container_menu' : ''  }
+                            <div                                
+                               
+                                // style={{marginLeft:"10px"}}
                                 onClick={handleRightClickPop}
                                 onContextMenu={(event) =>handleRightClick(event, item.frame)}
                             >
-                                <img   style={style} src={item.img_base64}/>
+                                <TransformWrapper panning={{disabled:true}}>
+                                <TransformComponent >
                                 
+                                {/* <img
+                                    width="200"
+                                    // height="200px"
+                                    src={item.img_base64}                                       
+                                >                                   
+                                </img> */}
+                               {/* <div style={{marginTop: "-152px"}}> */}
+                                    <CorrectorCanvas classStyle={flag && frameId.includes(item.frame) ? 'container_menu' : '' } image={item.img_base64} resolution={item.resolution} coordinates={item.new_coordinates}/>
+                               {/* </div>  */}
+                                </TransformComponent>
+                                </TransformWrapper>                                
                             </div>
                             <span>Frame No. {item.frame}</span>                            
-                    </Popover>
-                    {/* </ContextMenuTrigger> */}
-                    {/* // <ContextMenu id={"contextmenu_"+item.frame}> */}
-                        
-                    {/* </ContextMenu> */}
+                    </Popover>                   
                 </Col>
             )
         })
@@ -261,13 +281,8 @@ const Corrector = (props:Props) => {
 
     return (
         <>
-            <DotChartOutlined onClick={callSave} />
-            {flagValue  ?             
-                <>
-                <NotSavedAnnotationModal flagValue={true} popOverHide={popOverHide} jobInstance={jobInstance} />
-
-                </>
-            :
+            <DotChartOutlined style={{marginTop: '10px'}} onClick={callSave} />
+           
             <Modal
                 title="Label Corrector"
                 centered
@@ -276,6 +291,8 @@ const Corrector = (props:Props) => {
                 onCancel={() => setVisible(false)}
                 width={1000}
             >
+                {loading ? <Spin size="large" /> :
+                <>
                 <Row gutter={[16, 24]}>
 
                     <Col className="gutter-row" span={6}>
@@ -290,11 +307,15 @@ const Corrector = (props:Props) => {
                     </Col>
                 </Row>
                 <Divider orientation="left">Corrector</Divider>
-                <Row>
+               
+                <Row  style={{display:'flex', marginLeft:'8px'}}>
                     <CropedImagesNode data={croppedimages} />
                 </Row>
+                </>
+                }
             </Modal>
-            }
+          
+            {/* } */}
         </>
     )
 }
