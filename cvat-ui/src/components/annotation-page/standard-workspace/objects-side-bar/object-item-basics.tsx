@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Radio } from 'antd';
 import { Row, Col } from 'antd/lib/grid';
 import Button from 'antd/lib/button';
@@ -223,28 +223,40 @@ function ItemTopComponent(props: Props): JSX.Element {
         REMOVE_ITEM = 'remove_item',
     }
 
-    const sId = abcData?.annotation?.annotations?.states[0]?.serverID
+    const previousSidRef = useRef(null)
+
     useEffect(() => {
         (async () => {
             let i = 0
-            if (copyFlag == "true") {
+
+            if (copyFlag == "true") {               
+                const test1 = abcData?.annotation?.annotations?.states
+                const sId = test1[test1.length-1]?.serverID
+                console.log(serverID,"test1 : ",test1);
+                console.log(test1.length-1,"sId", sId);
+    
                 if (sId == undefined) {
                     await dispatch(saveAnnotationsAsync(jobInstance))
                 }
-                const payload = {
-                    "copied_track": copyId,
-                    "new_track": sId
-                }
-
-                if (copyId !== sId && sId !== undefined) {
+                // if(test1.length >1){
+                //     await dispatch(saveAnnotationsAsync(jobInstance));
+                // }
+               
+               /* console.log("previousSidRef.current !== sId", previousSidRef.current, sId) */
+                if (copyId !== sId && sId !== undefined  && previousSidRef.current !== sId) {
+                    const payload = {
+                        "copied_track": copyId,
+                        "new_track": test1.length > 1 ? test1[test1.length-1]?.serverID : test1[0].serverID
+                    }
                     await serverProxy.jobs.copyTrackAndPaste(payload).then((res) => {
                         localStorage.setItem("copyFlag", false)
-                        window.location.reload();
+                        // window.location.reload();
                     })
                 }
                 else {
                     setCFlag(true)
                 }
+            previousSidRef.current = sId;
             }
         })();
     }, [copyFlag, cflag])
@@ -315,6 +327,7 @@ function ItemTopComponent(props: Props): JSX.Element {
             <div style={{marginBottom:"-86px", marginLeft: '-10px'}}>  
             <Button key={MenuKeys.REMOVE_ITEM} type='link' onClick={(): void => {
                 Modal.info({
+                    width:"650px",
                     className: 'cvat-modal-confirm',
                     title: 'Delete Annotation',
                     onOk() {
