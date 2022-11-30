@@ -53,7 +53,7 @@ const Corrector = (props:Props) => {
     // const canvasRef = useRef()
 
     const abc = localStorage.getItem("serverId")
-        console.log("localStorage abc", abc)
+       /* console.log("localStorage abc", abc) */
 
     React.useEffect(() => {
       let path = window.location.pathname;
@@ -219,7 +219,7 @@ const Corrector = (props:Props) => {
 
     const CropedImagesNode = (data: any) => {   
         return data.data.map((item:any) => {
-            console.log("item", item)
+          /*  console.log("item", item) */
             return (
                 <Col  span={6} key={item.frame} >
                    

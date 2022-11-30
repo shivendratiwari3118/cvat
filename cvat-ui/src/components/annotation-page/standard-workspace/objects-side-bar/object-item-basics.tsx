@@ -224,42 +224,42 @@ function ItemTopComponent(props: Props): JSX.Element {
     }
 
     const previousSidRef = useRef(null)
-
+    // console.log("before useEffect ref", previousSidRef)
     useEffect(() => {
         (async () => {
             let i = 0
-
+            const test1 = abcData?.annotation?.annotations?.states               
+            const sId = test1[test1.length-1]?.serverID            
+            // console.log("inSide useEffect ref", previousSidRef)
             if (copyFlag == "true") {               
-                const test1 = abcData?.annotation?.annotations?.states
-                const sId = test1[test1.length-1]?.serverID
-                console.log(serverID,"test1 : ",test1);
-                console.log(test1.length-1,"sId", sId);
+                
+                // console.log("test1 : ",test1);
+                // console.log(test1.length-1,"sId", sId);
     
                 if (sId == undefined) {
                     await dispatch(saveAnnotationsAsync(jobInstance))
                 }
-                // if(test1.length >1){
-                //     await dispatch(saveAnnotationsAsync(jobInstance));
-                // }
                
-               /* console.log("previousSidRef.current !== sId", previousSidRef.current, sId) */
-                if (copyId !== sId && sId !== undefined  && previousSidRef.current !== sId) {
+                // console.log("previousSidRef.current !== sId", previousSidRef.current, sId)
+                if (copyId !== sId && sId !== undefined && previousSidRef.current !== sId) {
                     const payload = {
                         "copied_track": copyId,
-                        "new_track": test1.length > 1 ? test1[test1.length-1]?.serverID : test1[0].serverID
+                        "new_track": sId
                     }
                     await serverProxy.jobs.copyTrackAndPaste(payload).then((res) => {
                         localStorage.setItem("copyFlag", false)
-                        // window.location.reload();
+                        window.location.reload();
                     })
                 }
                 else {
                     setCFlag(true)
                 }
-            previousSidRef.current = sId;
             }
+            previousSidRef.current = sId;
+            // console.log("inSide after useEffect ref", previousSidRef)
         })();
     }, [copyFlag, cflag])
+    console.log("After useEffect ref", previousSidRef)
     return (
         <Row align='middle'>
             <Col span={10}>
