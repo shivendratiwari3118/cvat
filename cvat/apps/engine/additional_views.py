@@ -80,6 +80,35 @@ class ProjectExtraViewSet(viewsets.ModelViewSet):
 
 # end of laebl corrector
 
+# class BulkUpdate(viewsets.ModelViewSet):
+#     queryset = ''
+#     serializer_class = SaveTrackSerializer
+
+#     @action(detail=True, methods=['OPTIONS', 'POST','PUT'], url_path=r'data')
+#     def data(self, request,pk):
+
+#         attribute_name = request.data.get('attribute_id')
+#         if attribute_name == "SR_MAIN_ID":
+#             att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
+#             ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
+#             tshape = ltt.trackedshape_set.first()
+#             tshape.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+#             return Response({"message":True})
+#         else:
+
+#             att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
+#             ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
+#             tshape = ltt.trackedshape_set.first() # FIXME i ah
+#             if request.data.get('start_frame') == "start":
+#                 request.data['start_frame'] = tshape.frame
+#                 TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
+#             t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
+#             t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
+#             t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+#             t_end_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+#             return Response({"message":True})
+
+
 class BulkUpdate(viewsets.ModelViewSet):
     queryset = ''
     serializer_class = SaveTrackSerializer
@@ -96,17 +125,85 @@ class BulkUpdate(viewsets.ModelViewSet):
             return Response({"message":True})
         else:
 
+            # att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
+            # ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
+            # tshape = ltt.trackedshape_set.first() # FIXME i ah
+            # if request.data.get('start_frame') == "start":
+            #     request.data['start_frame'] = tshape.frame
+            #     TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
+            # t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
+            # t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
+            # t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+            # t_end_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+            # started to handle each case in bulk update
+            curr_frame = request.data.get('current_frame')
             att = AttributeSpec.objects.get(id=request.data.get('attribute_id'))
             ltt = LabeledTrack.objects.get(id=int(request.data.get('AnnotationId')))
-            tshape = ltt.trackedshape_set.first() # FIXME i ah
-            if request.data.get('start_frame') == "start":
-                request.data['start_frame'] = tshape.frame
-                TrackedShape.objects.filter(track_id=request.data.get("track_id"), frame = request.data.get("start_frame")).delete() # added to hanlde to remove frames
-            t_start_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('start_frame')))
-            t_end_obj = TrackedShape.objects.create(track=tshape.track,points=tshape.points,type=tshape.type,frame=int(request.data.get('end_frame')))
-            t_start_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
-            t_end_obj.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+            points = request.data.get('points')
+            if request.data.get('case') == "ctoe": # current to end frame 
+                # current frame  exists else create and update all next keyframes 
+                if ltt.trackedshape_set.filter(frame=curr_frame):
+                    for item in ltt.trackedshape_set.filter(frame__gte= curr_frame):
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+                else:
+                    ltt.trackedshape_set.create(frame=curr_frame,type="rectangle",points=points)
+                    for item in ltt.trackedshape_set.filter(frame__gte= curr_frame):
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+            
+            elif request.data.get('case') == "stoe": # start to end frame
+                for item in ltt.trackedshape_set.all():
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+
+
+            elif request.data.get('case') == "stoc": # start to current frame
+                # current frame  exists else create current_frame +1 and update all less than current frames 
+                new_curr = curr_frame + 1
+
+                if ltt.trackedshape_set.filter(frame=new_curr):
+                    for item in ltt.trackedshape_set.filter(frame__lte= new_curr):
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+                else:
+                    ltt.trackedshape_set.create(frame=new_curr,type="rectangle",points=points)
+                    for item in ltt.trackedshape_set.filter(frame__lte= new_curr):
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+                
+                for nitem in ltt.trackedshape_set.filter(frame=new_curr):
+                    nitem.trackedshapeattributeval_set.filter(spec=att).delete()
+                    nitem.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+
+            
+                
+            elif request.data.get('case') == "range":
+                start = request.data.get("start_frame")
+                end = request.data.get("end_frame")
+                # new_end =  end + 1
+                # create if start and end+1 frames not there
+                if ltt.trackedshape_set.filter(frame=start):
+                    pass
+                else:
+                    ltt.trackedshape_set.create(frame=start,type="rectangle",points=points)
+
+                if ltt.trackedshape_set.filter(frame=end):
+                    pass
+                else:
+                    ltt.trackedshape_set.create(frame=end,type="rectangle",points=points)
+
+                for item in ltt.trackedshape_set.filter(frame__gte = start):
+                        item.trackedshapeattributeval_set.filter(spec=att).delete()
+                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+                for nitems in ltt.trackedshape_set.filter(frame=end):
+                    nitems.trackedshapeattributeval_set.filter(spec=att).delete()
+                    nitems.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
+
+
             return Response({"message":True})
+
+
 
 class LabelCorrectorAttrSave(viewsets.ModelViewSet):
     # queryset = AdditionalProjectInfo.objects.filter()

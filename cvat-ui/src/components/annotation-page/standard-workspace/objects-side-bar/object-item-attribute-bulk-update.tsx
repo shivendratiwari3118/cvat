@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Divider, Modal, Typography, Radio } from 'antd';
+import { Button, Divider, Modal, Typography, Radio, Select } from 'antd';
 import { Input } from 'antd';
+import consts from 'consts';
 import { useDispatch } from 'react-redux';
 import InputNumber from 'antd/lib/input-number';
 import { Checkbox } from 'antd';
@@ -18,20 +19,27 @@ interface Props {
   AnnotationId: number | undefined
   attrValue: any;
   currentFrame: number;
+  points:any
+  attrDropdownValues:any
 }
 interface payLoadProps {
   start_frame: any;
   end_frame: any;
   attribute_val: any;
   attribute_previous_val: any
+  case: any
+  job_id:any
+  AnnotationId:any
 }
 
 const AttributeBulkUpdate = (props: Props) => {
 
   const dispatch = useDispatch();
-  const { attrID, attrType, AnnotationId, attrValue, attrName, trackId, jobInstance } = props;
+  const { attrID,attrDropdownValues,points, attrType, AnnotationId, attrValue, attrName, trackId, jobInstance } = props;
   const { Title } = Typography;
+  console.log("attrDropdownValues", attrDropdownValues)
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedDropDownValue, setSelectedDropDownValue] = useState(attrValue)
   const [value, setValue] = useState(1);
   const [chkValue, setChkValue] = useState(false);
   const [start, setStart] = useState<any>(null);
@@ -39,6 +47,7 @@ const AttributeBulkUpdate = (props: Props) => {
   const [jobId, setJobId] = useState(0);
   const [err, setErr] = useState(false);
   const [srMainIdValue, setSrMainIdValue] = useState(attrValue)
+  const [selectedCheckboxValue, setSelectedCheckboxValue] = useState("");
 
   React.useEffect(() => {
     let path = window.location.pathname;
@@ -49,6 +58,7 @@ const AttributeBulkUpdate = (props: Props) => {
   const onRadioChange = (e: RadioChangeEvent) => {
     setValue(e.target.value);
     if (e.target.value === 4) {
+      setSelectedCheckboxValue("range")
       setStart(null);
       setEnd(null);
     }
@@ -56,17 +66,38 @@ const AttributeBulkUpdate = (props: Props) => {
 
   const currentFrameValue = localStorage.getItem('frameNumber')
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
+  //   if (value == 1) {
+  //     setStart(currentFrameValue);
+  //     setEnd(jobInstance.stopFrame);
+  //   } else if (value == 2) {
+  //     // setStart(jobInstance.startFrame);
+  //     setStart("start")
+  //     setEnd(currentFrameValue);
+  //   } else if (value == 3) {
+  //     setStart("start")
+  //     // setStart(jobInstance.startFrame);
+  //     setEnd(jobInstance.stopFrame);
+  //   }
+  // }, [value]);
+
+   React.useEffect(() => {
     if (value == 1) {
+      setSelectedCheckboxValue("ctoe")
       setStart(currentFrameValue);
-      setEnd(jobInstance.stopFrame);
+      setEnd("stop")
+      // setEnd(jobInstance.stopFrame);
     } else if (value == 2) {
-      setStart(jobInstance.startFrame);
-      // setStart("start")
+      // setStart(jobInstance.startFrame);
+      setSelectedCheckboxValue("stoc")
+      setStart("start")
       setEnd(currentFrameValue);
     } else if (value == 3) {
-      setStart(jobInstance.startFrame);
-      setEnd(jobInstance.stopFrame);
+      setSelectedCheckboxValue("stoe")
+      setStart("start")
+      // setStart(jobInstance.startFrame);
+      // setEnd(jobInstance.stopFrame);
+      setEnd("stop")
     }
   }, [value]);
 
@@ -95,20 +126,23 @@ const AttributeBulkUpdate = (props: Props) => {
   const bulkUpdateAttributes = async () => {
     if (start !== null && end !== null) {
       try {
-        const payLoad: payLoadProps = {
+        const payLoad: any = {
+          case:selectedCheckboxValue,
+          current_frame:Number(currentFrameValue),
           start_frame: start,
-          end_frame: Number(end) + 1,
+          end_frame: value == 1 || value == 3 ? end : Number(end) + 1,
           job_id: jobId,
           AnnotationId,
+          points:points,
           attribute_id: attrID,
           attribute_name: attrName,
           attribute_previous_val: attrValue.toString().toLocaleLowerCase(),
-          attribute_val: attrType == 'text' ? srMainIdValue : chkValue.toString().toLocaleLowerCase()
+          attribute_val: attrType == 'text' ?  srMainIdValue : attrType =="select" ? selectedDropDownValue : chkValue.toString().toLocaleLowerCase()
         };
         console.log("payLoad", payLoad)
         const apiResponse = await payLoadPostAPI(payLoad);
         if (apiResponse.message == true) {
-          // window.location.reload()
+          window.location.reload()
         }
         setIsModalVisible(false);
       } catch (err) {
@@ -167,11 +201,34 @@ const AttributeBulkUpdate = (props: Props) => {
                 </tr>
                 <tr style={{ border: '1px solid grey' }}>
                   <td style={{ border: '1px solid grey', padding: '10px' }}><Title style={{ marginRight: '20px' }} level={5} >{attrName}</Title></td>
-                  {attrType !== "text" ?
+                
+                  {attrType === "checkbox" &&
+                  //   {attrType === "select" ? 
+                  //   :                   
                     <td style={{ border: '1px solid grey', padding: '10px' }}> <Checkbox onChange={onChange} /></td>
-                    :
+                    }
+                    {/* : */}
+                    {attrType === "text" &&
                     <td style={{ border: '1px solid grey', padding: '10px' }}> <Input value={srMainIdValue} onChange={(e:any) => setSrMainIdValue(e.target.value)} /> </td>
-                  }
+                    }
+                     {attrType === "select" &&
+                    <td style={{ border: '1px solid grey', padding: '10px' }}> 
+                      <Select
+                        size='small'                        
+                        onChange={(value) => setSelectedDropDownValue(value)}
+                        value={selectedDropDownValue}
+                        className='cvat-object-item-select-attribute'
+                      >                      
+                        {attrDropdownValues.map(
+                            (value: string): JSX.Element => (
+                                <Select.Option key={value} value={value}>
+                                    {value === consts.UNDEFINED_ATTRIBUTE_VALUE ? consts.NO_BREAK_SPACE : value}
+                                </Select.Option>
+                            ),
+                        )}
+                    </Select>
+                    </td>
+                    }
                 </tr>
               </table>
             </div>

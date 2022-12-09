@@ -21,6 +21,7 @@ import NotSavedAnnotationModal from './object-item-not-saved-annotations';
 
 interface Props {
     readonly: boolean;
+    points:any;
     attrInputType: string;
     attrValues: string[];
     attrValue: string;
@@ -48,7 +49,7 @@ function attrIsTheSame(prevProps: Props, nextProps: Props): boolean {
 
 function ItemAttributeComponent(props: Props): JSX.Element {
     const {
-        AnnotationId,currentFrame, jobInstance, attrInputType, attrValues, attrValue, attrName, attrID, readonly, changeAttribute,clientID
+        AnnotationId,points,currentFrame, jobInstance, attrInputType, attrValues, attrValue, attrName, attrID, readonly, changeAttribute,clientID
     } = props;
 
     const attrNameStyle: React.CSSProperties = { wordBreak: 'break-word', lineHeight: '1em' };
@@ -105,7 +106,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                     <Popover
                     content={
                         <AttributeBulkUpdate 
-                        attrType="checkbox"
+                            attrType="checkbox"
                             currentFrame={currentFrame} 
                             AnnotationId={AnnotationId} 
                             jobInstance={jobInstance} 
@@ -114,6 +115,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                             attrValue={attrValue} 
                             attrName={attrName} 
                             attrID={attrID}
+                            points={points}
+                            attrDropdownValues={attrValues}
                         />
                     }
                         placement="bottom"
@@ -198,7 +201,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         <Popover
                             content={
                                 <AttributeBulkUpdate 
-                                attrType="select"
+                                    attrType="select"
                                     currentFrame={currentFrame} 
                                     AnnotationId={AnnotationId} 
                                     jobInstance={jobInstance} 
@@ -207,6 +210,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                                     attrValue={attrValue} 
                                     attrName={attrName} 
                                     attrID={attrID}
+                                    attrDropdownValues={attrValues}
+                                    points={points}
                                 />
                             }
                             placement="bottom"
@@ -269,6 +274,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                                 attrValue={attrValue} 
                                 attrName={attrName} 
                                 attrID={attrID}
+                                points={points}
+                                attrDropdownValues={attrValues}
                                 />
                             }
                             placement="bottom"
@@ -341,7 +348,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                     <Popover
                         content={
                             <AttributeBulkUpdate 
-                            attrType="text"
+                                attrType="text"
                                 currentFrame={currentFrame}
                                 AnnotationId={AnnotationId} 
                                 jobInstance={jobInstance} 
@@ -350,6 +357,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                                 attrValue={attrValue} 
                                 attrName={attrName} 
                                 attrID={attrID} 
+                                points={points}
+                                attrDropdownValues={attrValues}
                             />
                         }
                         placement="bottom"

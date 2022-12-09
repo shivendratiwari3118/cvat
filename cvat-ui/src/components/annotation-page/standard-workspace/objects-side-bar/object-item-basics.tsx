@@ -23,6 +23,7 @@ import { removeAnnotationsAsync, removeObjectAsync, saveAnnotationsAsync } from 
 
 interface Props {
     jobInstance: any;
+    points:any;
     readonly: boolean;
     clientID: number;
     serverID: number | undefined;
@@ -60,6 +61,7 @@ function ItemTopComponent(props: Props): JSX.Element {
     const {
         readonly,
         clientID,
+        points,
         serverID,
         labelID,
         labels,
@@ -224,18 +226,12 @@ function ItemTopComponent(props: Props): JSX.Element {
     }
 
     const previousSidRef = useRef(null)
-    // console.log("before useEffect ref", previousSidRef)
     useEffect(() => {
         (async () => {
             let i = 0
             const test1 = abcData?.annotation?.annotations?.states               
             const sId = test1[test1.length-1]?.serverID            
-            // console.log("inSide useEffect ref", previousSidRef)
-            if (copyFlag == "true") {               
-                
-                // console.log("test1 : ",test1);
-                // console.log(test1.length-1,"sId", sId);
-    
+            if (copyFlag == "true") {
                 if (sId == undefined) {
                     await dispatch(saveAnnotationsAsync(jobInstance))
                 }

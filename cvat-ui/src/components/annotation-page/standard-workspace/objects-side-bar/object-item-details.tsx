@@ -10,6 +10,7 @@ import ItemAttribute from './object-item-attribute';
 import Corrector from './labelGenerator/corrector';
 
 interface Props {
+    points:any;
     readonly: boolean;
     collapsed: boolean;
     clientID: number;
@@ -43,7 +44,7 @@ function attrAreTheSame(prevProps: Props, nextProps: Props): boolean {
 
 function ItemAttributesComponent(props: Props): JSX.Element {
     const {
-        AnnotationId, jobInstance, serverID, collapsed, attributes, values, readonly, changeAttribute, collapse,clientID,
+        AnnotationId, jobInstance,points, serverID, collapsed, attributes, values, readonly, changeAttribute, collapse,clientID,
     } = props;
     const popOverHide = () =>{
         console.log("")
@@ -70,6 +71,7 @@ function ItemAttributesComponent(props: Props): JSX.Element {
                                 className='cvat-object-item-attribute-wrapper'
                             >
                                 <ItemAttribute
+                                    points={points}
                                     jobInstance={jobInstance}
                                     AnnotationId={AnnotationId}
                                     readonly={readonly}

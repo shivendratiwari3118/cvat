@@ -351,11 +351,13 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             stateColor = objectState.label.color;
         }
 
+        console.log("objectState", objectState)
         return (
             <ObjectStateItemComponent
                 jobInstance={jobInstance}
                 readonly={readonly}
                 activated={activated}
+                points={objectState.points}
                 objectType={objectState.objectType}
                 shapeType={objectState.shapeType}
                 clientID={objectState.clientID}

@@ -11,6 +11,7 @@ import ItemBasics from './object-item-basics';
 
 interface Props {
     normalizedKeyMap: Record<string, string>;
+    points:any;
     readonly: boolean;
     activated: boolean;
     objectType: ObjectType;
@@ -63,6 +64,7 @@ function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
 
 function ObjectItemComponent(props: Props): JSX.Element {
     const {
+        points,
         activated,
         readonly,
         objectType,
@@ -114,6 +116,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
             >
                 <ItemBasics
                     jobInstance={jobInstance}
+                    points={points}
                     readonly={readonly}
                     serverID={serverID}
                     clientID={clientID}
@@ -148,6 +151,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
                 <ObjectButtonsContainer readonly={readonly} clientID={clientID} />
                 {!!attributes.length && (
                     <ItemDetails
+                        points={points}
                         jobInstance={jobInstance}
                         AnnotationId={serverID}
                         readonly={readonly}
