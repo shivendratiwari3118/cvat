@@ -515,6 +515,7 @@ export function changePropagateFrames(frames: number): AnyAction {
 
 export function removeObjectAsync(sessionInstance: any, objectState: any, force: boolean): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        console.log(sessionInstance,"removeObjectAsync",objectState, force )
         try {
             await sessionInstance.logger.log(LogType.deleteObject, { count: 1 });
             const { frame } = receiveAnnotationsParameters();

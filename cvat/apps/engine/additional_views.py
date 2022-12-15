@@ -194,8 +194,9 @@ class BulkUpdate(viewsets.ModelViewSet):
                     ltt.trackedshape_set.create(frame=end,type="rectangle",points=points)
 
                 for item in ltt.trackedshape_set.filter(frame__gte = start):
-                        item.trackedshapeattributeval_set.filter(spec=att).delete()
-                        item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
+                        if item.frame < end:
+                            item.trackedshapeattributeval_set.filter(spec=att).delete()
+                            item.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_val"))
                 for nitems in ltt.trackedshape_set.filter(frame=end):
                     nitems.trackedshapeattributeval_set.filter(spec=att).delete()
                     nitems.trackedshapeattributeval_set.create(spec = att,value=request.data.get("attribute_previous_val"))
@@ -465,12 +466,15 @@ class CopyTrack(viewsets.ViewSet):
 
     @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
     def paste(self,request,pk):
-        ctrack = request.data.get("copied_track")
         new_track = request.data.get("new_track")
+        if request.data.get("paste_delete"):
+            LabeledTrack.objects.filter(id=new_track).delete()
+            return Response({"message":"true"})
+        ctrack = request.data.get("copied_track")
         tt = LabeledTrack.objects.get(id=new_track)
         #tt.trackedshape_set.create(frame=tt.trackedshape_set.last().frame+1,points= tt.trackedshape_set.last().points,outside=True)
         TrackedShape.objects.filter(track_id=new_track).update(track_id=ctrack)
         LabeledTrack.objects.filter(id=new_track).delete()
-        new_track = new_track - 1
-        LabeledTrack.objects.filter(id=new_track).delete()
+        # new_track = new_track - 1
+        # LabeledTrack.objects.filter(id=new_track).delete()
         return Response({"message":"true"})
