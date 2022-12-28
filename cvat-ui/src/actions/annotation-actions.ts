@@ -64,6 +64,7 @@ function receiveAnnotationsParameters(): AnnotationsParameters {
             workspace: { showAllInterpolationTracks },
         },
     } = state;
+    console.log("Annotations recieved are (state) : ",state);
 
     return {
         filters,
@@ -312,6 +313,7 @@ export function removeAnnotationsAsync(
     startFrame: number, endFrame: number, delTrackKeyframesOnly: boolean,
 ): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        console.log("removeAnnotationsAsync", startFrame, endFrame,delTrackKeyframesOnly)
         try {
             const {
                 filters, frame, showAllInterpolationTracks, jobInstance,
@@ -320,6 +322,7 @@ export function removeAnnotationsAsync(
             await jobInstance.actions.clear();
             const history = await jobInstance.actions.get();
             const states = await jobInstance.annotations.get(frame, showAllInterpolationTracks, filters);
+            console.log(history,"history states", states);
 
             dispatch({
                 type: AnnotationActionTypes.REMOVE_JOB_ANNOTATIONS_SUCCESS,
@@ -557,8 +560,11 @@ export function editShape(enabled: boolean): AnyAction {
 export function copyShape(objectState: any): AnyAction {
     const job = getStore().getState().annotation.job.instance;
     job.logger.log(LogType.copyObject, { count: 1 });
-    localStorage.setItem("copyShapeId",objectState.serverID)
-    localStorage.setItem("copyFlag", false)
+    console.log("Object copied : ",objectState);
+    console.log("Object copied job details : ",job);
+    localStorage.setItem("copyShapeId",objectState.serverID);
+    localStorage.setItem("Copied_Shape_id",objectState.serverID);
+    localStorage.setItem("copyFlag", false);
     return {
         type: AnnotationActionTypes.COPY_SHAPE,
         payload: {
@@ -1115,9 +1121,11 @@ export function saveAnnotationsAsync(sessionInstance: any, afterSave?: () => voi
         });
 
         try {
+            console.log("SaveAnnotationAsync function called...");
             const saveJobEvent = await sessionInstance.logger.log(LogType.saveJob, {}, true);
 
             await sessionInstance.annotations.save((status: string) => {
+                console.log("saving in progress status : ",status);
                 dispatch({
                     type: AnnotationActionTypes.SAVE_UPDATE_ANNOTATIONS_STATUS,
                     payload: {
@@ -1131,6 +1139,7 @@ export function saveAnnotationsAsync(sessionInstance: any, afterSave?: () => voi
 
             const { frame } = receiveAnnotationsParameters();
             const states = await sessionInstance.annotations.get(frame, showAllInterpolationTracks, filters);
+            console.log("Recieved states in save function : ",states);
             if (typeof afterSave === 'function') {
                 afterSave();
             }
@@ -1222,6 +1231,7 @@ export function updateAnnotationsAsync(statesToUpdate: any[]): ThunkAction {
         } = receiveAnnotationsParameters();
 
         try {
+            console.log("UpdateAnnotationAsync function called...");
             if (statesToUpdate.some((state: any): boolean => state.updateFlags.zOrder)) {
                 // deactivate object to visualize changes immediately (UX)
                 dispatch(activateObject(null, null));
@@ -1231,6 +1241,8 @@ export function updateAnnotationsAsync(statesToUpdate: any[]): ThunkAction {
             const states = await Promise.all(promises);
             const history = await jobInstance.actions.get();
             const [minZ, maxZ] = computeZRange(states);
+
+            console.log("Data fetched in updateAnnotationsAsync function : ",states);
 
             dispatch({
                 type: AnnotationActionTypes.UPDATE_ANNOTATIONS_SUCCESS,
@@ -1469,9 +1481,23 @@ export function pasteShapeAsync(): ThunkAction {
                     attributes: initialState.attributes,
                     frame: frameNumber,
                 });
+                console.log("objectState if paste action", objectState)
                 dispatch(createAnnotationsAsync(jobInstance, frameNumber, [objectState]));
             } else {
                 localStorage.setItem("copyFlag", true)
+                // const objectState = new cvat.classes.ObjectState({
+                //     objectType: ObjectType.TAG,
+                //     label: initialState.label,
+                //     attributes: initialState.attributes,
+                //     frame: frameNumber,
+                // });
+
+                console.log(initialState,"initialState objectState else paste action")
+                // console.log("canvasInstance", canvasInstance?.draw())
+                localStorage.setItem("initialStateId", initialState.serverID)
+
+                console.log("Initial state in paste function : ",initialState);
+                console.log("Copied Shape id : ",localStorage.getItem("Copied_Shape_id"));
                 canvasInstance.draw({
                     enabled: true,
                     initialState,

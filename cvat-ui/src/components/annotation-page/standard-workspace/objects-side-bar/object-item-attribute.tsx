@@ -16,6 +16,8 @@ import { clamp } from 'utils/math';
 import Signs from 'cvat-core/src/components/NewSigns/Signs';
 import AttributeBulkUpdate from './object-item-attribute-bulk-update';
 import NotSavedAnnotationModal from './object-item-not-saved-annotations';
+import { useDispatch } from 'react-redux';
+import { saveAnnotationsAsync } from 'actions/annotation-actions';
 
 
 
@@ -52,6 +54,8 @@ function ItemAttributeComponent(props: Props): JSX.Element {
         AnnotationId,points,currentFrame, jobInstance, attrInputType, attrValues, attrValue, attrName, attrID, readonly, changeAttribute,clientID
     } = props;
 
+    const dispatch = useDispatch()
+
     const attrNameStyle: React.CSSProperties = { wordBreak: 'break-word', lineHeight: '1em' };
     const [rightClick, setRightClick] = useState(false)   
     
@@ -83,6 +87,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                     onChange={(event: CheckboxChangeEvent): void => {
                         const value = event.target.checked ? 'true' : 'false';
                         changeAttribute(attrID, value);
+                        // dispatch(saveAnnotationsAsync(jobInstance))
                     }}
                 >
                     <Text 
@@ -144,6 +149,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         value={attrValue}
                         onChange={(event: RadioChangeEvent): void => {
                             changeAttribute(attrID, event.target.value);
+                            // dispatch(saveAnnotationsAsync(jobInstance))
                         }}
                     >
                         {attrValues.map(
@@ -177,6 +183,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         size='small'
                         onChange={(value: string): void => {
                             changeAttribute(attrID, value);
+                            // dispatch(saveAnnotationsAsync(jobInstance))
                         }}
                         value={attrValue}
                         className='cvat-object-item-select-attribute'
@@ -245,6 +252,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         onChange={(value: number | undefined | string): void => {
                             if (typeof value !== 'undefined') {
                                 changeAttribute(attrID, `${clamp(+value, min, max)}`);
+                                // dispatch(saveAnnotationsAsync(jobInstance))
                             }
                         }}
                         value={+attrValue}
@@ -330,6 +338,7 @@ function ItemAttributeComponent(props: Props): JSX.Element {
                         }
 
                         changeAttribute(attrID, event.target.value);
+                        // dispatch(saveAnnotationsAsync(jobInstance))
                     }}
                     onClick={handleRightClickPop}
                     onContextMenu={handleRightClick}

@@ -118,6 +118,7 @@ function ItemTopComponent(props: Props): JSX.Element {
 
         // console.log(removeFlag, "removeFlag useEffect", abc)
         if (pasteDeleteFlag == "true") {
+            console.log("pasteDeleteFlag in useEffect");
             const test1 = abcData?.annotation?.annotations?.states
             console.log("test1,", test1)
             const payload = {
@@ -126,13 +127,16 @@ function ItemTopComponent(props: Props): JSX.Element {
                 "new_track": test1[test1.length - 1]?.serverID,
 
             }
+            console.log("Payload in paste Delete useEffect : ",payload);
+            // dispatch(removeAnnotationsAsync(Number(currentFrameValue), Number(currentFrameValue) + 1, true))
             serverProxy.jobs.copyTrackAndPaste(payload).then((res: any) => {
                 // dispatch(removeObjectAsync(jobInstance, abcData?.annotation?.annotations?.states[test1.length -1], true))
               window.location.reload();
+              console.log("Server result in pastdellete useEffect : ",res);
             })
             localStorage.setItem("setRemoveFlag", false);
         } // dispatch(removeObjectAsync(jobInstance, ))
-    }, [pasteDeleteFlag])
+    }, [])
 
 
     React.useEffect(() => {
@@ -167,11 +171,12 @@ function ItemTopComponent(props: Props): JSX.Element {
             next_frame: parseInt(delete_frames.last) + 1,
             track_id: serverID,
         };
+        console.log("payload")
 
         serverProxy.jobs
             .saveBulkDelete(jobInstance.id, payLoad)
             .then((result: any) => {
-                window.location.reload();
+                // window.location.reload();
                 return result;
             })
             .catch((error: any) => {
@@ -239,9 +244,9 @@ function ItemTopComponent(props: Props): JSX.Element {
             .catch(err => console.log(err));
     }
 
-    // useEffect(() => {
-    //     updatetrackId();
-    // }, []);
+    useEffect(() => {
+        updatetrackId();
+    }, []);
 
     enum MenuKeys {
         REMOVE_ITEM = 'remove_item',
@@ -249,7 +254,6 @@ function ItemTopComponent(props: Props): JSX.Element {
 
     const previousSidRef = useRef(null)
     const previousReduxData = useRef(null);
-
     console.log(previousReduxData, "previousReduxData abcd", abcData?.annotation?.annotations?.states?.map(item => item.serverID))
     useEffect(() => {
         (async () => {
@@ -259,14 +263,16 @@ function ItemTopComponent(props: Props): JSX.Element {
                 if (sId == undefined) {
                     await dispatch(saveAnnotationsAsync(jobInstance))
                 }
-
+                //  const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
+                    const idd:any = copyId;
                 // console.log("previousSidRef.current !== sId", previousSidRef.current, sId)
-                if (copyId !== sId && sId !== undefined && previousSidRef.current !== sId) {
+                if (sId > idd && copyId !== sId && sId !== undefined && previousSidRef.current !== sId) {
                     const payload = {
                         "paste_delete": false,
                         "copied_track": copyId,
                         "new_track": sId
                     }
+
                     await serverProxy.jobs.copyTrackAndPaste(payload).then((res) => {
                         setRemoveFlag(true)
 
@@ -282,14 +288,17 @@ function ItemTopComponent(props: Props): JSX.Element {
                 }
             }
             previousSidRef.current = sId;
-            previousReduxData.current = test1;
+            previousReduxData.current =  test1;
             // console.log("inSide after useEffect ref", previousSidRef)
         })();
     }, [copyFlag, cflag])
+    const ccId : any = localStorage.getItem("initialStateId");
+
     return (
         <Row align='middle'>
             <Col span={10}>
                 {/* <Text style={{ fontSize: 12 }}>{`${serverID} (${currentId})`}</Text> */}
+                {/* <Text style={{ fontSize: 12 }}>{copyFlag == "true" ? ccId : `${serverID}`}</Text> */}
                 <Text style={{ fontSize: 12 }}>{`${serverID}`}</Text>
                 <br />
                 <Text

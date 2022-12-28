@@ -2335,6 +2335,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
             return `${Math.round(height)}X${Math.round(width)}`
         }
 
+        const ccId : any = localStorage.getItem("initialStateId");
+        const copyFlag: any = localStorage.getItem("copyFlag")
         // const getTrackID = () => {
         //     let track_ids = localStorage.getItem("track-ids");
         //     track_ids = JSON.parse(track_ids);
@@ -2347,11 +2349,11 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         // }
         // let trackID = getTrackID();
-
+        const id = copyFlag == "true" ? ccId : serverID;
         return this.adoptedText
             .text((block): void => {
                 let dimensions = getDimentions(points)
-                block.tspan(`${serverID} ${withLabel ? label.name : ''} ${withID ? (` ${dimensions} `) : ''} ${withSource ? `(${source})` : ''}`).style({
+                block.tspan(`${id} ${withLabel ? label.name : ''} ${withID ? (` ${dimensions} `) : ''} ${withSource ? `(${source})` : ''}`).style({
                     'text-transform': 'uppercase',
                 });
                 if (withDescriptions) {

@@ -139,6 +139,7 @@ function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Elemen
                 ),
                 className: 'cvat-modal-confirm-remove-annotation',
                 onOk: () => {
+                    console.log("aaa removeAnnotations", removeFrom, removeUpTo, removeOnlyKeyframes)
                     removeAnnotations(removeFrom, removeUpTo, removeOnlyKeyframes);
                 },
                 okButtonProps: {

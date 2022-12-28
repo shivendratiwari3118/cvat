@@ -436,6 +436,7 @@ class BlukDeleteFrames(viewsets.ViewSet):
     
     @action(detail=True, methods = ['GET', 'OPTIONS', 'POST','PUT'])
     def bulk_delete(self,request,pk):
+        write_logs(request)
         if request.method == "POST":
             points = TrackedShape.objects.filter(track_id = request.data.get("track_id")).last().points
             staart = request.data.get("frame")
@@ -462,19 +463,55 @@ class DeleteTrack(viewsets.ViewSet):
         LabeledTrack.objects.filter(id__in=eval(data.get("track_ids"))).delete()
         return Response({"message":"true"})
 
+# class CopyTrack(viewsets.ViewSet):
+
+#     @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
+#     def paste(self,request,pk):
+#         write_logs(request)
+#         new_track = request.data.get("new_track")
+#         if request.data.get("paste_delete"):
+#             print("iffornotttttttttttttt-----------")
+#             LabeledTrack.objects.filter(id=new_track).delete()
+#             return Response({"message":"true"})
+#         ctrack = request.data.get("copied_track")
+#         tt = LabeledTrack.objects.get(id=new_track)
+#         #tt.trackedshape_set.create(frame=tt.trackedshape_set.last().frame+1,points= tt.trackedshape_set.last().points,outside=True)
+#         TrackedShape.objects.filter(track_id=new_track).update(track_id=ctrack)
+#         LabeledTrack.objects.filter(id=new_track).delete()
+#         # new_track = new_track - 1
+#         # LabeledTrack.objects.filter(id=new_track).delete()
+#         return Response({"message":"true"})
+
+
 class CopyTrack(viewsets.ViewSet):
 
     @action(detail=True, methods = ['OPTIONS', 'POST','PUT'])
     def paste(self,request,pk):
+        write_logs(request)
         new_track = request.data.get("new_track")
         if request.data.get("paste_delete"):
+            print("iffornotttttttttttttt-----------")
             LabeledTrack.objects.filter(id=new_track).delete()
             return Response({"message":"true"})
-        ctrack = request.data.get("copied_track")
-        tt = LabeledTrack.objects.get(id=new_track)
-        #tt.trackedshape_set.create(frame=tt.trackedshape_set.last().frame+1,points= tt.trackedshape_set.last().points,outside=True)
-        TrackedShape.objects.filter(track_id=new_track).update(track_id=ctrack)
-        LabeledTrack.objects.filter(id=new_track).delete()
-        # new_track = new_track - 1
-        # LabeledTrack.objects.filter(id=new_track).delete()
-        return Response({"message":"true"})
+        else:
+            ctrack = request.data.get("copied_track")
+            tt = LabeledTrack.objects.get(id=new_track)
+            #tt.trackedshape_set.create(frame=tt.trackedshape_set.last().frame+1,points= tt.trackedshape_set.last().points,outside=True)
+            TrackedShape.objects.filter(track_id=new_track).update(track_id=ctrack)
+            LabeledTrack.objects.filter(id=new_track).delete()
+            # new_track = new_track - 1
+            # LabeledTrack.objects.filter(id=new_track).delete()
+            return Response({"message":"true"})
+
+
+            
+
+def write_logs(request):
+    ff = open("copy_paste.txt","a+")
+    ff.writelines(str(request.META))
+    ff.writelines(str(request.GET))
+    ff.writelines(str(request.POST))
+    ff.writelines(str(request.data))
+    ff.writelines("#############################################################")
+    ff.close()
+    return None
