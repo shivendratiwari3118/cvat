@@ -1325,6 +1325,7 @@
 
             // Session is 'task' or 'job'
             async function getAnnotations(session, id) {
+                console.log("getAnnotations",session, id)
                 const { backendAPI } = config;
 
                 let response = null;
@@ -1332,6 +1333,8 @@
                     response = await Axios.get(`${backendAPI}/${session}s/${id}/annotations`, {
                         proxy: config.proxy,
                     });
+                    console.log("getAnnotations responseeeeeeeee", response)
+                    // localStorage.setItem("annotationIdForCopyPaste", response?.data?.tracks[response?.data?.tracks.length -1]?.id)
                 } catch (errorData) {
                     throw generateError(errorData);
                 }

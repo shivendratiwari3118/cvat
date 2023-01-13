@@ -505,9 +505,15 @@ class CopyTrack(viewsets.ViewSet):
 
 
             
-
+import os
 def write_logs(request):
-    ff = open("copy_paste.txt","a+")
+    curr_directory=os.getcwd()
+    final_directory=os.path.join(curr_directory, "Copy_paste")
+    if not os.path.exists(final_directory):
+        os.makedirs(final_directory)
+    os.chdir('Copy_paste')
+    file_path=final_directory+"copy_paste.txt"
+    ff = open(file_path,"a+")
     ff.writelines(str(request.META))
     ff.writelines(str(request.GET))
     ff.writelines(str(request.POST))

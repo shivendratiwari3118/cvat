@@ -2,6 +2,7 @@ import h5py
 import os
 import json
 import pandas as pd
+import numpy as np
 #from h5_extract import h5_extract_start
 
 class output_conversion_cls:
@@ -61,6 +62,15 @@ class output_conversion_cls:
 
 
         df = pd.DataFrame(data["annotations"])
+
+
+        df["tid"]=df['attributes'].apply(lambda x: x.get('track_id'))
+        df=df.sort_values(by = ['tid', 'image_id'], axis=0, ascending=[True, True], inplace=False, kind='quicksort', na_position='first', ignore_index=True, key=None)
+        df['del_rows'] = (~df.duplicated(subset=['tid'], keep='last')).astype(int)
+        df['del_rows'] = np.where(df.duplicated(subset=['tid'], keep='last'), 0, 1)        
+        df = df[df['del_rows'] == 0]
+
+
         df_objectlabels=df[df['category_id'] != scenelabel_id]
         df_objectlabels=df_objectlabels.reset_index()
 
@@ -78,7 +88,7 @@ class output_conversion_cls:
         #data = json.load(f)
 
         #df = pd.DataFrame(data["annotations"])
-        df_objectlabels=df_objectlabels.drop(['segmentation', 'area', 'iscrowd'], axis = 1, errors='ignore')
+        df_objectlabels=df_objectlabels.drop(['segmentation', 'area', 'iscrowd', 'tid', 'del_rows'], axis = 1, errors='ignore')
 
         ObjectLabels=[]
 

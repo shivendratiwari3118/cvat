@@ -19,7 +19,7 @@ import CVATTooltip from 'components/common/cvat-tooltip';
 import LabelSelector from 'components/label-selector/label-selector';
 import ItemMenu from './object-item-menu';
 import { useDispatch, useSelector } from 'react-redux';
-import { removeAnnotationsAsync, removeObjectAsync, saveAnnotationsAsync } from 'actions/annotation-actions';
+import { fetchAnnotationsAsync, removeAnnotationsAsync, removeObjectAsync, saveAnnotationsAsync } from 'actions/annotation-actions';
 
 interface Props {
     jobInstance: any;
@@ -114,29 +114,151 @@ function ItemTopComponent(props: Props): JSX.Element {
         }
     };
     const pasteDeleteFlag: any = localStorage.getItem("setRemoveFlag")
-    useEffect(() => {
+    const previousSidRef = useRef(null)
+    const previousReduxData = useRef(null);
+    console.log(previousReduxData, "previousReduxData abcd", abcData?.annotation?.annotations?.states?.map(item =>{return {id: item.serverID, time:item.updated}}))
+   
+//     const fdata = abcData?.annotation?.annotations?.states?.map(item =>{return {id: item.serverID, time:item.updated}})
+//     let maxTime = '';
+//     fdata.forEach(item => {
+//         if(item.time > maxTime){
+//             maxTime = item.time
+//         }
+//     })
+//     const filterData = fdata.find(item => item.time === maxTime)
+// console.log("filterData", filterData);
 
-        // console.log(removeFlag, "removeFlag useEffect", abc)
-        if (pasteDeleteFlag == "true") {
-            console.log("pasteDeleteFlag in useEffect");
-            const test1 = abcData?.annotation?.annotations?.states
-            console.log("test1,", test1)
-            const payload = {
-                "paste_delete": true,
-                "copied_track": "",
-                "new_track": test1[test1.length - 1]?.serverID,
+const annotationFunc = async() => {
+   const res = await serverProxy?.annotations?.getAnnotations("job", jobInstance?.id)
+    .then(response => {
+        console.log("response", response?.data?.tracks)
+        const aData = response?.data?.tracks[response?.data?.tracks.length -1]?.id;
+        console.log("annotationCopyData", aData)
+        localStorage.setItem("annotationCopyData",aData)
 
-            }
-            console.log("Payload in paste Delete useEffect : ",payload);
-            // dispatch(removeAnnotationsAsync(Number(currentFrameValue), Number(currentFrameValue) + 1, true))
-            serverProxy.jobs.copyTrackAndPaste(payload).then((res: any) => {
-                // dispatch(removeObjectAsync(jobInstance, abcData?.annotation?.annotations?.states[test1.length -1], true))
-              window.location.reload();
-              console.log("Server result in pastdellete useEffect : ",res);
-            })
-            localStorage.setItem("setRemoveFlag", false);
-        } // dispatch(removeObjectAsync(jobInstance, ))
-    }, [])
+})
+console.log("annotationCopyData", res)
+return res;
+}
+
+// useEffect(() => {
+//     console.log("jobInstance?.id", jobInstance?.id)
+//     // annotationFunc();
+//     dispatch(fetchAnnotationsAsync())
+// },[])
+const [responseData, setResponseData] = useState();
+// useEffect(() => {
+//     serverProxy?.annotations?.getAnnotations("job", jobInstance?.id)
+//         .then((response:any) => {
+//             console.log("useEffect response", response?.data?.tracks[response?.data?.tracks.length -1]?.id)
+//             setAFlag(true)
+//             localStorage.setItem("annotationCopyData",response?.data?.tracks[response?.data?.tracks.length -1]?.id)
+//             setResponseData(response)
+//             // idd = response?.tracks[response.tracks.length - 1]?.id
+//         })
+// },[])
+// console.log("responseData", responseData);
+const payLoadPostAPI = async (jobData:any, jobid:any) => {
+    // return serverProxy.jobs
+    //   .saveBulkupdate(payload)
+    //   .then((result: any) => {
+    //     return result;
+    //   })
+    console.log("jobid", jobid)
+      
+
+     return await serverProxy?.annotations?.getAnnotations(jobData, jobid)
+     .then((result: any) => {
+        let abc:any = [];
+        result.tracks.map((item:any) => abc.push(item?.id));
+        console.log("abc", abc)
+        return abc;
+      })
+      .catch((error: any) => {
+        return error;
+      })
+  }
+
+  const [aFlag, setAFlag] = useState(false)
+  const fetchAnnotationsId:any = localStorage.getItem("fetchAnnotationsId")
+  const fetchAnnotationsIdFlag = localStorage.getItem("fetchAnnotationsIdFlag")
+  console.log(fetchAnnotationsIdFlag,"fetchAnnotationsId", fetchAnnotationsId)
+    // useEffect( ()=>  {
+    //     // console.log(removeFlag, "removeFlag useEffect", abc)
+    //     // let idd = "";
+    //     // serverProxy?.annotations?.getAnnotations("job", jobInstance?.id)
+    //     // .then((response:any) => {
+    //     //     console.log("response", response)
+    //     //     setAFlag(true)
+    //     //     idd = response?.tracks[response.tracks.length - 1]?.id
+    //     // })
+            
+    //             // console.log("previousSidRef.current !== sId", previousSidRef.current, sId)
+               
+        
+    //     if (pasteDeleteFlag == "true") {
+
+    //         // localStorage.setItem("useEffectId", true)
+    //         // dispatch(fetchAnnotationsAsync());
+    //         const test1 = abcData?.annotation?.annotations?.states
+    //         const sId = test1[test1.length - 1]?.serverID
+    //         const idd:any = copyId;
+    //         console.log("jobInstance?.id", jobInstance?.id)
+    //         const responseData =  payLoadPostAPI("job", jobInstance.id)
+    //         console.log("responseData", responseData)
+    //         // serverProxy?.annotations?.getAnnotations("job", jobInstance?.id)
+    //         // .then((response:any) => {
+    //         //     console.log("response", response)
+    //         //     setAFlag(true)
+    //         //     idd = response?.tracks[response.tracks.length - 1]?.id
+    //         // })
+
+    //         const annotationCopyData:any = localStorage.getItem("annotationCopyData")
+    //         console.log("annotationCopyData", annotationCopyData)
+    //         const fdata = abcData?.annotation?.annotations?.states?.map(item =>{return {id: item.serverID, time:item.updated}})
+    //         let maxTime = '';
+    //         fdata.forEach(item => {
+    //             if(item.time > maxTime){
+    //                 maxTime = item.time
+    //             }
+    //         })
+    //         const filterData = fdata.length > 1 ? fdata.filter(item => item.time === maxTime) : {}
+    //         console.log("filterData", filterData);
+    //         // const arr2 = previousReduxData?.current?.map(item => item.serverID)
+           
+    //         // let test11:any = abcData?.annotation?.annotations?.states?.map(item => item.serverID);
+    //         // const test1 = abcData?.annotation?.annotations?.states
+    //         // console.log("test1,", test1)
+    //         // console.log(arr2,"previousReduxData in useEffect 1->", test11);
+    //         // let unique1 = test11.filter((o) => arr2.indexOf(o) === -1);
+    //         // let unique2 = arr2.filter((o) => arr1.indexOf(o) === -1);
+    //         // const unique = unique1.concat(unique2);
+    //         console.log("aFlag", aFlag)
+    //         // const fetchAnnotationsId = localStorage.getItem("fetchAnnotationsId")
+    //         console.log("fetchAnnotationsId", fetchAnnotationsId)
+    //         // if( sId > idd){
+    //         // if(idd < fetchAnnotationsId && fetchAnnotationsIdFlag == "true" && fetchAnnotationsId !== "undefined"){
+    //         //     const payload = {
+    //         //         "paste_delete": true,
+    //         //         "copied_track": "",
+    //         //         "new_track": fetchAnnotationsId,
+    //         //     }
+    //         //     console.log("Payload in paste Delete useEffect : ",payload);
+    //         //     // if(aFlag == true){
+    //         //         serverProxy.jobs.copyTrackAndPaste(payload).then((res: any) => {
+    //         //             // dispatch(removeObjectAsync(jobInstance, abcData?.annotation?.annotations?.states[test1.length -1], true))
+    //         //             window.location.reload();
+    //         //             console.log("Server result in pastdellete useEffect : ",res);
+    //         //         })
+    //         // }
+    //         // }
+            
+    //         localStorage.setItem("setRemoveFlag", false);
+    //     } // dispatch(removeObjectAsync(jobInstance, ))
+    //     // previousReduxData.current = abcData?.annotation?.annotations?.states?.map(item => item.serverID);
+    // // })
+    //     // }
+    // }, [fetchAnnotationsId])
 
 
     React.useEffect(() => {
@@ -176,7 +298,7 @@ function ItemTopComponent(props: Props): JSX.Element {
         serverProxy.jobs
             .saveBulkDelete(jobInstance.id, payLoad)
             .then((result: any) => {
-                // window.location.reload();
+                window.location.reload();
                 return result;
             })
             .catch((error: any) => {
@@ -252,9 +374,10 @@ function ItemTopComponent(props: Props): JSX.Element {
         REMOVE_ITEM = 'remove_item',
     }
 
-    const previousSidRef = useRef(null)
-    const previousReduxData = useRef(null);
-    console.log(previousReduxData, "previousReduxData abcd", abcData?.annotation?.annotations?.states?.map(item => item.serverID))
+   
+
+    const fdataa:any = localStorage.getItem("annotationIdForCopyPaste")
+    console.log("fdataa", fdataa)
     useEffect(() => {
         (async () => {
             const test1 = abcData?.annotation?.annotations?.states
@@ -285,6 +408,32 @@ function ItemTopComponent(props: Props): JSX.Element {
                 }
                 else {
                     setCFlag(true)
+                }
+            }
+
+            if(pasteDeleteFlag === "true"){
+                if (sId == undefined) {
+                    await dispatch(saveAnnotationsAsync(jobInstance))
+                }
+                //  const delete_frames = JSON.parse(window.localStorage.getItem('delete_frames'));
+                    const idd:any = copyId;
+                // console.log("previousSidRef.current !== sId", previousSidRef.current, sId)
+                if (sId > idd && copyId !== sId && sId !== undefined && previousSidRef.current !== sId) {
+                    const payload = {
+                        "paste_delete": true,
+                        "copied_track": "",
+                        "new_track": sId
+                    }
+
+                    await serverProxy.jobs.copyTrackAndPaste(payload).then((res) => {
+                        // setRemoveFlag(true)
+
+                        localStorage.setItem("setRemoveFlag", false)
+                        // // dispatch(removeObjectAsync(jobInstance, abcData?.annotation?.annotations?.states[test1.length -1], true))
+                        // localStorage.setItem("copyFlag", false)
+                        // console.log("copy paste success", abcData)
+                        window.location.reload();
+                    })
                 }
             }
             previousSidRef.current = sId;

@@ -34,7 +34,9 @@
 
         if (!cache.has(session)) {
             const rawAnnotations = await serverProxy.annotations.getAnnotations(sessionType, session.id);
-
+            console.log("getAnnotationsFromServer",rawAnnotations)
+            // const abc = rawAnnotations?.tracks?.map(item => item.id);
+            // localStorage.setItem(abc,"pasteDeleteId", rawAnnotations?.tracks?.map(item => item.id))
             // Get meta information about frames
             const startFrame = sessionType === 'job' ? session.startFrame : 0;
             const stopFrame = sessionType === 'job' ? session.stopFrame : session.size - 1;
