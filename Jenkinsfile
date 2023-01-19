@@ -5,7 +5,7 @@ pipeline {
             steps {
 		echo "Cloning Git"
 		sh "rm -rf /var/lib/jenkins/cvat_data"
-		sh "mkdir /var/lib/jenkins/cvat_data"
+		sh "mkdir - p /var/lib/jenkins/cvat_data"
 		sh "cd /var/lib/jenkins/cvat_data ; git clone http://10.40.41.57:7990/scm/cvat/cvat-dev.git"
 		
             }
