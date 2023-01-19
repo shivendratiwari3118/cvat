@@ -19,6 +19,8 @@ pipeline {
         stage('Build') {
 
             steps {
+                
+                sh "echo building...."
 
                 //sh "cd /var/lib/jenkins/cvat_data/cvat-dev/; docker-compose -f docker-compose.yml -f docker-compose.dev.yml build"
 
