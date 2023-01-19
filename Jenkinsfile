@@ -1,79 +1,74 @@
 pipeline {
     agent any
+
     stages {
         stage('clone') {
             steps {
-		echo "Cloning Git"
-// 		sh "rm -rf /var/lib/jenkins/cvat_data"
-// 		sh "mkdir - p /var/lib/jenkins/cvat_data"
-		//sh "cd /var/lib/jenkins/cvat_data ; git clone http://10.40.41.57:7990/scm/cvat/cvat-dev.git"
-        sh "pwd"
-        sh "git clone https://github.com/shivendratiwari3118/cvat.git"
-        sh "pwd"
-		
+                sh 'echo #############  CLONING ################'
+                sh 'hostname'
             }
-
-
-
         }
-
-
-
-        stage('Build') {
-
+        stage('build') {
+            agent any
             steps {
-                
-                sh "echo building...."
-
-                //sh "cd /var/lib/jenkins/cvat_data/cvat-dev/; docker-compose -f docker-compose.yml -f docker-compose.dev.yml build"
-
+                sh 'echo ########### BUILD ##############'
+                sh 'pwd'
+                sh 'hostname'
+//                 sh 'docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f components/analytics/docker-compose.analytics.yml build'
             }
-
-
-
         }
-
-
-
-	stage('Test') {
-
+        stage('tag') {
+            agent any
             steps {
-
-                script {
-
-		sh "echo Testing...."
-
-                }
-
+                sh 'echo ########### tagg ##############'
+                sh 'pwd'
+                sh 'hostname'
+                sh 'sh dockertag.sh'
             }
-
         }
 
+        stage('Push'){
+               agent any
+               steps{
+                sh 'echo ############## Pushing to Docker Registory  ################# '
+                sh 'hostname'
+             //   sh 'usermod -aG docker apexon'
+               // sh 'docker image | grep -i 10.40.41.59'
+//                 sh 'docker tag openvino/cvat_server 10.40.41.59:5000/cvat ; docker tag openvino/cvat_ui 10.40.41.59:5000/cvat-ui '
+//                 sh 'docker push 10.40.41.59:5000/cvat; docker push 10.40.41.59:5000/cvat-ui'
 
+
+            }
+        }
 
         stage('Deploy') {
-
+            agent any
             steps {
+                script {
+                    if (env.BRANCH_NAME == 'devops') {
+                        echo 'Deploy From DevOps Branch'
+                        //sh 'sh ssh/deploy 10.40.41.59'
+                        sh 'hostname'
+                        sh 'pwd'
 
-		echo "Deploy.."
-		
-//                 sh "cd /var/lib/jenkins/cvat_data/cvat-dev/ && docker-compose down"
-// 	        sh "docker rm -f '\$(docker ps -aq | grep -v bitbucket)'"
-//                 sh "cd /var/lib/jenkins/cvat_data/cvat-dev/ && docker-compose up -d"
-		
+                        //sh 'helm dependency build'
+//                         sh 'helm upgrade -i cvat ./helm-chart -f ./helm-chart/values.yaml --namespace production'
 
+               //         sh 'docker-compose up -d'
+                    }
+                    if (env.BRANCH_NAME == 'prod') {
 
+                        echo 'Deploy From prod Branch'
+                        //sh 'sh ssh/deploy 10.40.41.57'
+                        sh 'hostname'
+                        sh 'pwd'
 
+                        //sh 'helm dependency build'
+
+//                         sh 'helm upgrade -i cvat ./helm-chart -f ./helm-chart/values.yaml --namespace production'
+                    }
+                }
             }
-
-
-
         }
-
-
-
     }
-
-
-
 }
